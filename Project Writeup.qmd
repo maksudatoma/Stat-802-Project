@@ -1,0 +1,154 @@
+---
+title: "802 Project Summary"
+authors: 
+  Maksuda Aktar Toma,
+  Jo Charbonneau,
+  Ryan Lalicker
+date: today
+date-format: long
+execute: 
+  echo: false
+  warning: false
+columns: 2
+format:
+  pdf: 
+    fig-align: center
+    fig-width: 6
+    fig-height: 4
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+```{r,  fig.pos="H"}
+#| label: data-setup
+#| echo: false
+#| eval: true
+
+# Put most/all libraries in this code chunk and read in needed data files.
+
+library(knitr)
+library(dplyr)
+library(ggplot2)
+library(naniar)
+library(reshape2)
+library(GGally)
+library(janitor)
+library(emmeans)
+library(MASS)
+library(multcomp)
+library(lme4)
+library(nnet)
+
+data <- read.csv("rptm_simulation.csv")
+head(data)
+
+
+```
+
+```{r,  fig.pos="H"}
+#| label: Scratch-work-1
+#| echo: false
+#| eval: false
+
+```
+
+# Introduction
+
+
+For more information on the experiment, the data, or any other files used in this paper see our [Github page](https://github.com/maksudatoma/Stat-802-Project) which can be found at https://github.com/maksudatoma/Stat-802-Project.
+The coding languages used in the paper are R and SAS.
+The corresponding code can be found in *Appendix A - R Code* and *Appendix B - SAS Code* respectively.
+
+## Variables
+
+
+## Missing Values
+
+
+
+```{r,,fig.pos="H"}
+#| label: fig-some-label
+#| echo: false
+#| eval: true
+#| fig-cap: ""
+
+# To create a plot copy this code segment and change the name of the label above.  You can then enter the label in fig-cap.  
+
+```
+
+
+## Summary Statistics
+
+
+
+```{r,  fig.pos="H"}
+#| label: fig-two-plots
+#| echo: false
+#| eval: true
+#| fig-cap: "Two plots"
+#| layout-ncol: 2
+#| fig-subcap: 
+#|  - "First"
+#|  - "Second"
+#| fig-width: 6
+#| fig-height: 4
+
+# This allows you to make two plots side by side.  If you want to plot 4 plots you can use `#| layout-nrow: 2` to get a 2x2 setup.
+
+```
+
+
+## Exploring the Data
+
+
+
+
+# Model
+
+
+Models can be written as 
+
+$$
+Y_{ijk} = \mu + \alpha_i + \beta_j + (\alpha \beta)_{ij}+u_k+e_{ijk}
+$$ 
+
+where $Y_{ijk}$ represents the final weight for the $ith$ treatment, the $j$th sex, and the $k$th sire.
+$\mu$ represents the overall mean, while $\alpha_i$ is the fixed effect for the $ith$ treatment, $\beta_j$ is the fixed effect for the $j$th sex, and $(\alpha \beta)_{ij}$ is their interaction.
+The random sire effect is represented by $u_k$ and we assume $u_k~N(0,\sigma_k^2)$.
+We also assume the residual term $e_{ijkl}$ is distributed as $~N(0,\sigma^2)$.
+
+
+# Conclusion 
+
+
+
+# Future Work
+
+
+
+\newpage
+
+# References
+
+::: {#refs}
+:::
+
+\newpage
+
+# Appendix A - R Code
+
+```{r,  fig.pos="H"}
+#| label: appendix A
+#| echo: true
+#| eval: false
+
+```
+
+\newpage
+
+# Appendix B - SAS Code
+
+``` sas
+
+```
