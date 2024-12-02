@@ -66,6 +66,9 @@ The corresponding code can be found in *Appendix A - R Code* and *Appendix B - S
 ## Missing Values
 
 
+## Summary of response variable
+
+## Summary Statistics
 
 ```{r,,fig.pos="H"}
 #| label: fig-some-label
@@ -73,13 +76,65 @@ The corresponding code can be found in *Appendix A - R Code* and *Appendix B - S
 #| eval: true
 #| fig-cap: ""
 
-# To create a plot copy this code segment and change the name of the label above.  You can then enter the label in fig-cap.  
+# Summary of response variable across factors and weeks
+response_summary <- data %>%
+  group_by(Inoculation_Method, Thickness, Week) %>%
+  summarise(
+    Mean_Response = mean(Response, na.rm = TRUE),
+    SD_Response = sd(Response, na.rm = TRUE),
+    Count = n()
+  )
+
+
+# Load the kableExtra library for enhanced table formatting
+library(kableExtra)
+
+# Create a summary table using kable
+response_summary %>%
+  kbl(
+    caption = "Summary of Response Variable Across Factors and Weeks",
+    digits = 3,
+    col.names = c("Inoculation Method", "Thickness", "Week", "Mean Response", "SD Response", "Count")
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = FALSE
+  )
+
 
 ```
 
 
-## Summary Statistics
 
+## Distribution of response variable
+
+```{r}
+library(ggplot2)
+
+# Basic histogram
+ggplot(data, aes(x = Response)) +
+  geom_histogram(binwidth = 0.1, color = "black", fill = "skyblue") +
+  labs(
+    title = "Histogram of Response Variable",
+    x = "Response",
+    y = "Frequency"
+  ) +
+  theme_minimal() +
+  theme(text = element_text(size = 14))
+
+ggplot(data, aes(x = Response, fill = Thickness)) +
+  geom_histogram(binwidth = 0.1, color = "black", alpha = 0.7) +
+  facet_wrap(~ Thickness) +
+  labs(
+    title = "Histogram of Response Variable by Thickness",
+    x = "Response",
+    y = "Frequency"
+  ) +
+  theme_minimal() +
+  theme(text = element_text(size = 14))
+
+
+```
 
 
 ```{r,  fig.pos="H"}
@@ -94,17 +149,91 @@ The corresponding code can be found in *Appendix A - R Code* and *Appendix B - S
 #| fig-width: 6
 #| fig-height: 4
 
-# This allows you to make two plots side by side.  If you want to plot 4 plots you can use `#| layout-nrow: 2` to get a 2x2 setup.
+# Load ggplot2 library
+library(ggplot2)
+
+# Create a line plot
+ggplot(response_summary, aes(x = Week, y = Mean_Response, color = Inoculation_Method, group = interaction(Inoculation_Method, Thickness))) +
+  geom_line(aes(linetype = Thickness), size = 1) +
+  geom_point(size = 2) +
+  labs(
+    title = "Mean Response Trends Across Weeks",
+    x = "Week",
+    y = "Mean Response",
+    color = "Inoculation Method",
+    linetype = "Thickness"
+  ) +
+  theme_minimal() +
+  theme(
+    text = element_text(size = 14),
+    legend.position = "bottom"
+  )
+
+## 2. Bar Plot
+ggplot(response_summary, aes(x = Thickness, y = Mean_Response, fill = Inoculation_Method)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~ Week) +
+  labs(
+    title = "Mean Response by Thickness and Inoculation Method",
+    x = "Thickness",
+    y = "Mean Response",
+    fill = "Inoculation Method"
+  ) +
+  theme_minimal() +
+  theme(
+    text = element_text(size = 14),
+    legend.position = "bottom"
+  )
+
+##3. Boxplot
+
+ggplot(data, aes(x = factor(Week), y = Response, fill = Inoculation_Method)) +
+  geom_boxplot() +
+  facet_wrap(~ Thickness) +
+  labs(
+    title = "Response Distribution Across Weeks",
+    x = "Week",
+    y = "Response",
+    fill = "Inoculation Method"
+  ) +
+  theme_minimal() +
+  theme(
+    text = element_text(size = 14),
+    legend.position = "bottom"
+  )
+
 
 ```
 
 
 ## Exploring the Data
 
+```{r}
+# Load ggplot2 library
+library(ggplot2)
+
+# Create a line plot for response trends
+ggplot(data, aes(x = Week, y = Response, color = Inoculation_Method, group = interaction(Inoculation_Method, Thickness))) +
+  geom_line(aes(linetype = Thickness), size = 1) +
+  geom_point() +
+  labs(
+    title = "Response Trends Across Weeks",
+    x = "Week",
+    y = "Response",
+    color = "Inoculation Method",
+    linetype = "Thickness"
+  ) +
+  theme_minimal() +
+  theme(
+    text = element_text(size = 14),
+    legend.position = "bottom"
+  )
+
+```
 
 
 
-# Model
+## Model
 
 
 Models can be written as 
@@ -117,6 +246,82 @@ where $Y_{ijk}$ represents the final weight for the $ith$ treatment, the $j$th s
 $\mu$ represents the overall mean, while $\alpha_i$ is the fixed effect for the $ith$ treatment, $\beta_j$ is the fixed effect for the $j$th sex, and $(\alpha \beta)_{ij}$ is their interaction.
 The random sire effect is represented by $u_k$ and we assume $u_k~N(0,\sigma_k^2)$.
 We also assume the residual term $e_{ijkl}$ is distributed as $~N(0,\sigma^2)$.
+
+# Mixed Model
+
+1. RCBD
+```{r}
+library(lme4)
+library(lmerTest) 
+# Fit the RCBD model
+rcbd_model <- lmer(
+  Response ~ Inoculation_Method * Thickness * Week + (1 | Batches),
+  data = data
+)
+
+# Summary of the model
+summary(rcbd_model)
+
+
+```
+2. With Repeated Measure
+
+```{r}
+# Fit a mixed-effects model for repeated measures
+repeated_model <- lmer(
+  Response ~ Inoculation_Method * Thickness * Week + (1 | Batches) + (1 | Batches:Week),
+  data = data
+)
+
+# Summary of the model
+summary(repeated_model)
+
+```
+3. Weeks differs accros Batches
+```{r}
+# Fit a mixed-effects model for repeated measures
+repeated_slop_model <- lmer(
+  Response ~ Inoculation_Method * Thickness * Week + (1 | Batches) + (1 | Batches:Week),
+  data = data
+)
+
+# Summary of the model
+summary(repeated_slop_model)
+
+```
+
+# Model Diagnozition
+
+```{r}
+# Residual diagnostics
+plot(rcbd_model)
+qqnorm(resid(rcbd_model))
+qqline(resid(rcbd_model))
+
+# ANOVA table for fixed effects
+anova(rcbd_model)
+
+# Residual diagnostics
+plot(repeated_model)
+qqnorm(resid(repeated_model))
+qqline(resid(repeated_model))
+
+# ANOVA table for fixed effects
+anova(repeated_model)
+
+anova(rcbd_model, repeated_model, repeated_slop_model)
+
+```
+
+# Post hoc test
+
+```{r}
+library(emmeans)
+
+# Post-hoc pairwise comparisons
+emmeans(repeated_model, pairwise ~ Inoculation_Method * Thickness)
+
+```
 
 
 # Conclusion 
