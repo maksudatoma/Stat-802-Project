@@ -273,19 +273,7 @@ ggplot(data, aes(x = Week, y = Response, color = Inoculation_Method, group = int
 
 
 
-## Model
 
-
-Models can be written as 
-
-$$
-Y_{ijk} = \mu + \alpha_i + \beta_j + (\alpha \beta)_{ij}+u_k+e_{ijk}
-$$ 
-
-where $Y_{ijk}$ represents the final weight for the $ith$ treatment, the $j$th sex, and the $k$th sire.
-$\mu$ represents the overall mean, while $\alpha_i$ is the fixed effect for the $ith$ treatment, $\beta_j$ is the fixed effect for the $j$th sex, and $(\alpha \beta)_{ij}$ is their interaction.
-The random sire effect is represented by $u_k$ and we assume $u_k~N(0,\sigma_k^2)$.
-We also assume the residual term $e_{ijkl}$ is distributed as $~N(0,\sigma^2)$.
 
 ## Mixed Model
 
