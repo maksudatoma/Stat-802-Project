@@ -55,18 +55,58 @@ head(data)
 
 # Introduction
 
-
-For more information on the experiment, the data, or any other files used in this paper see our [Github page](https://github.com/maksudatoma/Stat-802-Project) which can be found at https://github.com/maksudatoma/Stat-802-Project.
-The coding languages used in the paper are R and SAS.
+This paper summarizes the consulting that was done for our assigned STAT 802 group.  For more information on the experiment, the data, or any other files used in this paper see our [Github page](https://github.com/maksudatoma/Stat-802-Project) which can be found at https://github.com/maksudatoma/Stat-802-Project.  The coding languages used in the paper are R and SAS.
 The corresponding code can be found in *Appendix A - R Code* and *Appendix B - SAS Code* respectively.
 
-## Variables
+
+# Initial Meetings
+
+The first meeting with our clients was on September 13th.  We discussed their project and what kind of data they were going to be looking at. They detailed to us their project, which is looking at the levels of Salmonella in beef jerky at different inoculations and thicknesses. Prior to the meeting they sent us what their variables would be, which gave us a good idea of what might be the best experimental design.  The group informed us they were avoiding a completely randomized design (CRD) at the request of their professor. With that in mind, we suggested other possible models.  
+
+Later, after receiving feedback from Dr. Howard and several PhD students within the statistics department, we suggested adding a time component to the experiment as well as creating multiple batches to replicate each treatment combination.  This lead to us suggested a mixed model for the analysis approach.
+
+In both the initial meeting and the follow-up session the clients were more than happy to implement our suggestions.  In the end the experiment involved two thickness levels (one-fourth and one-eighth of an inch), two inoculation methods (dry and wet), and five evenly spaced time points were measurements were taken (weeks 1-5) creating twenty entries per batch. The exact number of batches would not be known until after the power analysis, found in the *Power Analysis* section.  We provided the client an example dataset we created to give them a better idea of what the end product may look like.  This dataset had five batches.
 
 
-## Missing Values
+# Study Objectives and Proposed Model
+
+The clients were most interested in the effect of the thickness levels, the inoculation method, and their interaction had on the Salmonella levels.  In the final model we included the week effect and subsequent interactions as well.  These variables are the fixed effects in the proposed mixed model.
+
+The other variable included in the experiment is the batch number.  This is a repeated measure and is therefore treated as a random variable.  As mentioned above, the exact number of batches needed was unknown prior to the power analysis, but five was used as a starting value.
+
+The model can be written in the form 
+
+$$
+Y_{ijkl} = \mu + \alpha_i + \beta_j + \tau_k + (\alpha \beta)_{ij}+(\alpha \tau)_{ik}+(\beta \tau)_{jk}+(\alpha \beta \tau)_{ijk} + u_l + e_{ijkl}
+$$ 
+
+Here, $Y_{ijkl}$ is the Salmonella level and $\mu$ is the overall mean.  The fixed effects are represented by $\alpha_i$ for the effect of the $i$th inoculation method, $\beta_j$ for the effect of the $j$th thickness level, and $\tau_k$ for the effect of the $k$th week.  The interaction effect of the $i$th inoculation method and the $j$th thickness level is represented by $(\alpha \beta)_{ij}$, with the other two-way interactions following this form.  The three-way interaction between all fixed effects is represented as $(\alpha \beta \tau)_{ijk}$.  The random effect for batches is represented by $u_l$, which we assume are distributed as $u_l$~$N(0,\sigma_u^2)$.  Lastly, the residuals are represented by $e_{ijkl}$, which we assume can be distributed as $e_{ijkl}$~$N(0,\sigma^2)$.
 
 
-## Summary of response variable
+# Power Analysis
+
+**NEED TO WRITE MORE HERE**
+**MAYBE INCLUDE THEIR SOURCE FOR TRT MEANS**
+
+Using code found in *Appendix B - SAS Code*
+(@trtmeans)
+
+# Simulating Data
+
+
+
+```{r,,fig.pos="H"}
+#| label: fig-some-label
+#| echo: false
+#| eval: true
+#| fig-cap: ""
+
+# To create a plot copy this code segment and change the name of the label above.  You can then enter the label in fig-cap.  
+
+```
+
+
+# Data Analysis
 
 ## Summary Statistics
 
@@ -247,7 +287,7 @@ $\mu$ represents the overall mean, while $\alpha_i$ is the fixed effect for the 
 The random sire effect is represented by $u_k$ and we assume $u_k~N(0,\sigma_k^2)$.
 We also assume the residual term $e_{ijkl}$ is distributed as $~N(0,\sigma^2)$.
 
-# Mixed Model
+## Mixed Model
 
 1. RCBD
 ```{r}
@@ -290,7 +330,7 @@ summary(repeated_slop_model)
 
 ```
 
-# Model Diagnozition
+## Model Diagnozition
 
 ```{r}
 # Residual diagnostics
@@ -313,7 +353,7 @@ anova(rcbd_model, repeated_model, repeated_slop_model)
 
 ```
 
-# Post hoc test
+## Post hoc test
 
 ```{r}
 library(emmeans)
