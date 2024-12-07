@@ -320,6 +320,29 @@ corrplot(time_cor_matrix, method = "circle", type = "upper", tl.col = "black", t
 
 ```
 
+## Model Comparison
+
+The UN (Unstructured) model provides the best fit based on AIC and BIC, but it requires estimating many parameters. The ARH(1) model is a strong alternative, balancing simplicity with good fit, especially under BIC. The VC (Variance Components) and AR(1) models perform similarly under AICC, with AR(1) offering a simpler time correlation structure. BIC penalizes complexity more than AIC, favoring simpler models like ARH(1) over UN. Overall, UN is ideal for maximum flexibility, while AR(1) or ARH(1) are practical choices for computational efficiency and simplicity.
+
+```{r model-comparison-table, echo=FALSE, message=FALSE, warning=FALSE}
+# Load necessary libraries
+library(knitr)
+library(kableExtra)
+
+# Model comparison data
+data <- data.frame(
+  Model = c("VC", "UN", "CS", "AR(1)", "ARH(1)", "ANTE", "TOEP"),
+  AIC = c(-12.2, -44.2, -17.6, -18.9, -26.6, -28.6, -19.3),
+  AICC = c(-12.1, -12.2, -11.3, -12.5, -11.0, -5.4, -6.2),
+  BIC = c(-13.0, -18.5, -12.8, -14.0, -15.3, -12.5, -9.7)
+)
+
+# Create and format the table
+data %>%
+  kable("html", caption = "Model Comparison Table") %>%
+  kable_styling("striped", full_width = FALSE, position = "center")
+
+```
 
 
 ## Mixed Model
@@ -329,6 +352,7 @@ corrplot(time_cor_matrix, method = "circle", type = "upper", tl.col = "black", t
 ```{r}
 library(lme4)
 library(lmerTest) 
+
 # Fit the RCBD model
 rcbd_model <- lmer(
   Response ~ Inoculation_Method * Thickness * Week + (1 | Batches),
@@ -339,11 +363,10 @@ rcbd_model <- lmer(
 summary(rcbd_model)
 
 
-```
 
-2.  With Repeated Measure
+#2.  With Repeated Measure
 
-```{r}
+
 # Fit a mixed-effects model for repeated measures
 repeated_model <- lmer(
   Response ~ Inoculation_Method * Thickness * Week + (1 | Batches) + (1 | Batches:Week),
@@ -354,6 +377,7 @@ repeated_model <- lmer(
 summary(repeated_model)
 
 ```
+
 
 3.  Weeks differs accros Batches
 
@@ -595,6 +619,7 @@ run;
 ```
 
 ### Analysis
+
 
 ``` sas
 ```
