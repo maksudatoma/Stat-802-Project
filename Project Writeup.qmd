@@ -55,50 +55,75 @@ head(data)
 
 # Introduction
 
-This paper summarizes the consulting that was done for our assigned STAT 802 group.  For more information on the experiment, the data, or any other files used in this paper see our [Github page](https://github.com/maksudatoma/Stat-802-Project) which can be found at https://github.com/maksudatoma/Stat-802-Project.  The coding languages used in the paper are R and SAS.
+This paper summarizes the consulting that was done for our assigned STAT 802 group.
+For more information on the experiment, the data, or any other files used in this paper see our [Github page](https://github.com/maksudatoma/Stat-802-Project) which can be found at https://github.com/maksudatoma/Stat-802-Project.
+The coding languages used in the paper are R and SAS.
 The corresponding code can be found in *Appendix A - R Code* and *Appendix B - SAS Code* respectively.
-
 
 # Initial Meetings
 
-The first meeting with our clients was on September 13th.  We discussed their project and what kind of data they were going to be looking at. They detailed to us their project, which is looking at the levels of Salmonella in beef jerky at different inoculations and thicknesses. Prior to the meeting they sent us what their variables would be, which gave us a good idea of what might be the best experimental design.  The group informed us they were avoiding a completely randomized design (CRD) at the request of their professor. With that in mind, we suggested other possible models.  
+The first meeting with our clients was on September 13th.
+We discussed their project and what kind of data they were going to be looking at.
+They detailed to us their project, which is looking at the levels of Salmonella in beef jerky at different inoculations and thicknesses.
+Prior to the meeting they sent us what their variables would be, which gave us a good idea of what might be the best experimental design.
+The group informed us they were avoiding a completely randomized design (CRD) at the request of their professor.
+With that in mind, we suggested other possible models.
 
-Later, after receiving feedback from Dr. Howard and several PhD students within the statistics department, we suggested adding a time component to the experiment as well as creating multiple batches to replicate each treatment combination.  This lead to us suggested a mixed model for the analysis approach.
+Later, after receiving feedback from Dr. Howard and several PhD students within the statistics department, we suggested adding a time component to the experiment as well as creating multiple batches to replicate each treatment combination.
+This lead to us suggested a mixed model for the analysis approach.
 
-In both the initial meeting and the follow-up session the clients were more than happy to implement our suggestions.  In the end the experiment involved two thickness levels (one-fourth and one-eighth of an inch), two inoculation methods (dry and wet), and five evenly spaced time points were measurements were taken (weeks 1-5) creating twenty entries per batch. The exact number of batches would not be known until after the power analysis, found in the *Power Analysis* section.  We provided the client an example dataset we created to give them a better idea of what the end product may look like.  This dataset had five batches.
-
+In both the initial meeting and the follow-up session the clients were more than happy to implement our suggestions.
+In the end the experiment involved two thickness levels (one-fourth and one-eighth of an inch), two inoculation methods (dry and wet), and five evenly spaced time points were measurements were taken (weeks 1-5) creating twenty entries per batch.
+The exact number of batches would not be known until after the power analysis, found in the *Power Analysis* section.
+We provided the client an example dataset we created to give them a better idea of what the end product may look like.
+This dataset had five batches.
 
 # Study Objectives and Proposed Model
 
-The clients were most interested in the effect of the thickness levels, the inoculation method, and their interaction had on the Salmonella levels.  In the final model we included the week effect and subsequent interactions as well.  These variables are the fixed effects in the proposed mixed model.
+The clients were most interested in the effect of the thickness levels, the inoculation method, and their interaction had on the Salmonella levels.
+In the final model we included the week effect and subsequent interactions as well.
+These variables are the fixed effects in the proposed mixed model.
 
-The other variable included in the experiment is the batch number.  This is a repeated measure and is therefore treated as a random variable.  As mentioned above, the exact number of batches needed was unknown prior to the power analysis, but five was used as a starting value.
+The other variable included in the experiment is the batch number.
+This is a repeated measure and is therefore treated as a random variable.
+As mentioned above, the exact number of batches needed was unknown prior to the power analysis, but five was used as a starting value.
 
-The model can be written in the form 
+The model can be written in the form
 
 $$
 Y_{ijkl} = \mu + \alpha_i + \beta_j + \tau_k + (\alpha \beta)_{ij}+(\alpha \tau)_{ik}+(\beta \tau)_{jk}+(\alpha \beta \tau)_{ijk} + u_l + e_{ijkl}
-$$ 
+$$
 
-Here, $Y_{ijkl}$ is the Salmonella level and $\mu$ is the overall mean.  The fixed effects are represented by $\alpha_i$ for the effect of the $i$th inoculation method, $\beta_j$ for the effect of the $j$th thickness level, and $\tau_k$ for the effect of the $k$th week.  The interaction effect of the $i$th inoculation method and the $j$th thickness level is represented by $(\alpha \beta)_{ij}$, with the other two-way interactions following this form.  The three-way interaction between all fixed effects is represented as $(\alpha \beta \tau)_{ijk}$.  The random effect for batches is represented by $u_l$, which we assume are distributed as $u_l$~$N(0,\sigma_u^2)$.  Lastly, the residuals are represented by $e_{ijkl}$, which we assume can be distributed as $e_{ijkl}$~$N(0,\sigma^2)$.
+Here, $Y_{ijkl}$ is the Salmonella level and $\mu$ is the overall mean.
+The fixed effects are represented by $\alpha_i$ for the effect of the $i$th inoculation method, $\beta_j$ for the effect of the $j$th thickness level, and $\tau_k$ for the effect of the $k$th week.
+The interaction effect of the $i$th inoculation method and the $j$th thickness level is represented by $(\alpha \beta)_{ij}$, with the other two-way interactions following this form.
+The three-way interaction between all fixed effects is represented as $(\alpha \beta \tau)_{ijk}$.
+The random effect for batches is represented by $u_l$, which we assume are distributed as $u_l$\~$N(0,\sigma_u^2)$.
+Lastly, the residuals are represented by $e_{ijkl}$, which we assume can be distributed as $e_{ijkl}$\~$N(0,\sigma^2)$.
 
 **NEED TO ADD IN INFO ON COVARIANCE STRUCTURE**
 
-We reached out to the client later on in the process to determine what contrasts they were most interested in testing.  They expressed they wanted to see the difference between the two levels of the inoculation method, the two levels of the thickness, and the orthogonal contrasts these variable.  This resulted in six contrasts being tested.
-
+We reached out to the client later on in the process to determine what contrasts they were most interested in testing.
+They expressed they wanted to see the difference between the two levels of the inoculation method, the two levels of the thickness, and the orthogonal contrasts these variable.
+This resulted in six contrasts being tested.
 
 # Power Analysis
 
-To determine the necessary number of batches needed to increase the likelihood of detecting a true treatment effect, we performed a power analysis.  To do this, probable treatment mean estimates across all five weeks and variance estimates were needed.  The clients provided these metrics from @trtmeans.  We then used these metrics to create a dataset with five batches where the response variable was identical across the batches.  This dataset was then evaluated to determine the power.  The results of the power analysis are shown below.
+To determine the necessary number of batches needed to increase the likelihood of detecting a true treatment effect, we performed a power analysis.
+To do this, probable treatment mean estimates across all five weeks and variance estimates were needed.
+The clients provided these metrics from @trtmeans.
+We then used these metrics to create a dataset with five batches where the response variable was identical across the batches.
+This dataset was then evaluated to determine the power.
+The results of the power analysis are shown below.
 
-![Results of power analysis.](Power Output.png)
+![Results of power analysis.](Power%20Output.png)
 
-The first six rows of the table correspond to the contrasts the clients were interested in testing, while the bottom seven rows are measuring the fixed effects of the model.  Many of the terms have a very high power.  Specifically the fixed effects were all high enough for both the clients and ourselves to feel comfortable using five batches.  Two of the orthogonal contrasts, *Dry vs Wet at 1/4 Inches* and *1/4 vs 1/8 inches for Wet inoculation* did have lower power scores, but after talking with both the clients and Dr. Howard about them, we felt comfortable proceeding.
-
+The first six rows of the table correspond to the contrasts the clients were interested in testing, while the bottom seven rows are measuring the fixed effects of the model.
+Many of the terms have a very high power.
+Specifically the fixed effects were all high enough for both the clients and ourselves to feel comfortable using five batches.
+Two of the orthogonal contrasts, *Dry vs Wet at 1/4 Inches* and *1/4 vs 1/8 inches for Wet inoculation* did have lower power scores, but after talking with both the clients and Dr. Howard about them, we felt comfortable proceeding.
 
 # Simulating Data
-
-
 
 ```{r,,fig.pos="H"}
 #| label: fig-some-label-1
@@ -109,7 +134,6 @@ The first six rows of the table correspond to the contrasts the clients were int
 # To create a plot copy this code segment and change the name of the label above.  You can then enter the label in fig-cap.  
 
 ```
-
 
 # Data Analysis
 
@@ -149,8 +173,6 @@ response_summary %>%
 
 ```
 
-
-
 ## Distribution of response variable
 
 ```{r}
@@ -180,7 +202,6 @@ ggplot(data, aes(x = Response, fill = Thickness)) +
 
 
 ```
-
 
 ```{r,  fig.pos="H"}
 #| label: fig-two-plots
@@ -250,7 +271,6 @@ ggplot(data, aes(x = factor(Week), y = Response, fill = Inoculation_Method)) +
 
 ```
 
-
 ## Exploring the Data
 
 ```{r}
@@ -276,13 +296,36 @@ ggplot(data, aes(x = Week, y = Response, color = Inoculation_Method, group = int
 
 ```
 
+# Correlation Structure
 
+```{r}
+
+# Transform the data into wide format with time points as columns
+library(tidyr)
+wide_data <- pivot_wider(data, names_from = Week, values_from = Response)
+
+# Remove non-numeric columns (like ID or group factors)
+time_data <- wide_data[ , -1] # Exclude the first column (ID or grouping variable)
+time_data <- time_data[sapply(time_data, is.numeric)]
+
+# Compute the correlation matrix across time points
+time_cor_matrix <- cor(time_data, use = "pairwise.complete.obs")
+
+# Print the correlation matrix
+print(time_cor_matrix)
+
+# Visualize the correlation matrix
+library(corrplot)
+corrplot(time_cor_matrix, method = "circle", type = "upper", tl.col = "black", tl.srt = 45)
+
+```
 
 
 
 ## Mixed Model
 
-1. RCBD
+1.  RCBD
+
 ```{r}
 library(lme4)
 library(lmerTest) 
@@ -297,7 +340,8 @@ summary(rcbd_model)
 
 
 ```
-2. With Repeated Measure
+
+2.  With Repeated Measure
 
 ```{r}
 # Fit a mixed-effects model for repeated measures
@@ -310,7 +354,9 @@ repeated_model <- lmer(
 summary(repeated_model)
 
 ```
-3. Weeks differs accros Batches
+
+3.  Weeks differs accros Batches
+
 ```{r}
 # Fit a mixed-effects model for repeated measures
 repeated_slop_model <- lmer(
@@ -356,14 +402,9 @@ emmeans(repeated_model, pairwise ~ Inoculation_Method * Thickness)
 
 ```
 
-
-# Conclusion 
-
-
+# Conclusion
 
 # Future Work
-
-
 
 \newpage
 
@@ -388,12 +429,13 @@ emmeans(repeated_model, pairwise ~ Inoculation_Method * Thickness)
 # Appendix B - SAS Code
 
 ### Power Analysis
+
 ``` sas
 data rptm_means;
 input Inoculation_Method $ Thickness $ @@; 
 do Week=1 to 5 by 1; 
-	input mu @@; 
-	output; 
+    input mu @@; 
+    output; 
 end;
 datalines;
 Dry 1/4 4.26 4.25 4.47 4.33 4.54
@@ -451,7 +493,6 @@ run;
 
 proc print data=power;
 run;
-
 ```
 
 ### Simulation
@@ -556,5 +597,4 @@ run;
 ### Analysis
 
 ``` sas
-
 ```
