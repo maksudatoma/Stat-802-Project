@@ -9,12 +9,12 @@ date-format: long
 execute: 
   echo: false
   warning: false
-columns: 2
 format:
   pdf: 
     fig-align: center
     fig-width: 6
     fig-height: 4
+bibliography: references.bib
 editor: 
   markdown: 
     wrap: sentence
@@ -24,8 +24,6 @@ editor:
 #| label: data-setup
 #| echo: false
 #| eval: true
-
-# Put most/all libraries in this code chunk and read in needed data files.
 
 library(knitr)
 library(dplyr)
@@ -39,9 +37,9 @@ library(MASS)
 library(multcomp)
 library(lme4)
 library(nnet)
+library(kableExtra)
 
 data <- read.csv("rptm_simulation.csv")
-head(data)
 
 
 ```
@@ -116,31 +114,28 @@ We then used these metrics to create a dataset with five batches where the respo
 This dataset was then evaluated to determine the power.
 The results of the power analysis are shown below.
 
-![Results of power analysis.](Power%20Output.png)
+![Results of power analysis.](Power Output.png)
 
 The first six rows of the table correspond to the contrasts the clients were interested in testing, while the bottom seven rows are measuring the fixed effects of the model.
 Many of the terms have a very high power.
 Specifically the fixed effects were all high enough for both the clients and ourselves to feel comfortable using five batches.
 Two of the orthogonal contrasts, *Dry vs Wet at 1/4 Inches* and *1/4 vs 1/8 inches for Wet inoculation* did have lower power scores, but after talking with both the clients and Dr. Howard about them, we felt comfortable proceeding.
 
+
 # Simulating Data
 
-```{r,,fig.pos="H"}
-#| label: fig-some-label-1
-#| echo: false
-#| eval: true
-#| fig-cap: ""
+After finding the necessary number of batches, which was five, we proceeded with simulating the data.
+The estimated treatment means and variances provided by the client were used in the simulation as well.  We then reviews the simulated dataset for major issues, such as negative response values, and reran the power analysis on the new data set to ensure everything was working properly.  After finding no problems with the dataset, we sent it to your clients.
 
-# To create a plot copy this code segment and change the name of the label above.  You can then enter the label in fig-cap.  
-
-```
 
 # Data Analysis
 
 ## Summary Statistics
 
+As part of the project, we analyzed the simulated dataset.  Before fitting out model to the dataset, we first wanted to explore some of the variables.  @fig-sum-stats shows the mean values and standard deviations for each treatment combination.  We can see the changes in mean values are small, so further exploration and analysis are needed. 
+
 ```{r,,fig.pos="H"}
-#| label: fig-some-label-2
+#| label: fig-sum-stats
 #| echo: false
 #| eval: true
 #| fig-cap: ""
@@ -154,76 +149,75 @@ response_summary <- data %>%
     Count = n()
   )
 
-
-# Load the kableExtra library for enhanced table formatting
-library(kableExtra)
-
 # Create a summary table using kable
-response_summary %>%
-  kbl(
-    caption = "Summary of Response Variable Across Factors and Weeks",
-    digits = 3,
-    col.names = c("Inoculation Method", "Thickness", "Week", "Mean Response", "SD Response", "Count")
-  ) %>%
-  kable_styling(
-    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
-    full_width = FALSE
-  )
+knitr::kable(
+  response_summary,
+  caption = "Summary of response rariable across factors and weeks",
+  digits = 3, # Round numbers to 3 decimal places
+  col.names = c("Inoculation Method", "Thickness", "Week", "Mean Response", "SD Response", "Count"),
+  format = "markdown"
+)
 
 
 ```
 
 ## Distribution of response variable
 
-```{r}
-library(ggplot2)
+Before continuing our investigation into the relationships among the treatment variables, we want to look into the response variable (Salmonella levels).  Specifically, we want to see how it is distributed.    @fig-hist shows a histogram and Q-Q plot of the response variable in the left and right plots respectively.  While the histogram shows a slight potential skew, this is not enough for us say the distribution is non-normal.  Furthermore, the Q-Q plot indicates the response variable follows a relatively normal distribution.
+
+```{r,,fig.pos="H"}
+#| label: fig-hist
+#| echo: false
+#| eval: true
+#| fig-cap: "Plots to see the distribution of the response variable."
+#| layout-ncol: 2
+#| fig-subcap: 
+#|  - "Histogram"
+#|  - "Q-Q plot"
+#| fig-width: 6
+#| fig-height: 4
+
 
 # Basic histogram
 ggplot(data, aes(x = Response)) +
   geom_histogram(binwidth = 0.1, color = "black", fill = "skyblue") +
   labs(
-    title = "Histogram of Response Variable",
     x = "Response",
     y = "Frequency"
   ) +
   theme_minimal() +
   theme(text = element_text(size = 14))
 
-ggplot(data, aes(x = Response, fill = Thickness)) +
-  geom_histogram(binwidth = 0.1, color = "black", alpha = 0.7) +
-  facet_wrap(~ Thickness) +
+ggplot(data, aes(sample = Response)) +
+  stat_qq(color = "black") +
+  stat_qq_line(color = "red", linetype = "dashed") +
   labs(
-    title = "Histogram of Response Variable by Thickness",
-    x = "Response",
-    y = "Frequency"
+    x = "Theoretical Quantiles",
+    y = "Sample Quantiles"
   ) +
   theme_minimal() +
   theme(text = element_text(size = 14))
-
 
 ```
 
+
+## Exploring the Data
+
+Now we will graphically look at how the different variables of the model impact the response variable.  @fig-explore-1 shows how the mean response variables we saw in @fig-sum-stats change over time, while also controlling for thickness and inoculation method.  Note the y-axis of plot does not start at the origin.  We can see the mean values of samples that used a wet inoculation method (blue lines) tended decrease over time, while samples with the dry inoculation method (red lines) were more of a mixed bag but saw sharp increases between weeks four and five.  The samples cut to 1/8 inches thick (dashed lines) were very similar for most weeks, but diverged near the end of the experiment, while samples cut to 1/4 inches thick (solid lines) did not seem as similar.
+
+
 ```{r,  fig.pos="H"}
-#| label: fig-two-plots
+#| label: fig-explore-1
 #| echo: false
 #| eval: true
-#| fig-cap: "Two plots"
-#| layout-ncol: 2
-#| fig-subcap: 
-#|  - "First"
-#|  - "Second"
+#| fig-cap: "Line plot of response variable over time, controlling for thickness and inoculation method."
 #| fig-width: 6
 #| fig-height: 4
 
-# Load ggplot2 library
-library(ggplot2)
-
-# Create a line plot
 ggplot(response_summary, aes(x = Week, y = Mean_Response, color = Inoculation_Method, group = interaction(Inoculation_Method, Thickness))) +
   geom_line(aes(linetype = Thickness), size = 1) +
   geom_point(size = 2) +
   labs(
-    title = "Mean Response Trends Across Weeks",
     x = "Week",
     y = "Mean Response",
     color = "Inoculation Method",
@@ -235,29 +229,25 @@ ggplot(response_summary, aes(x = Week, y = Mean_Response, color = Inoculation_Me
     legend.position = "bottom"
   )
 
-## 2. Bar Plot
-ggplot(response_summary, aes(x = Thickness, y = Mean_Response, fill = Inoculation_Method)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  facet_wrap(~ Week) +
-  labs(
-    title = "Mean Response by Thickness and Inoculation Method",
-    x = "Thickness",
-    y = "Mean Response",
-    fill = "Inoculation Method"
-  ) +
-  theme_minimal() +
-  theme(
-    text = element_text(size = 14),
-    legend.position = "bottom"
-  )
+```
 
-##3. Boxplot
+**PROBLEM - ONLY 5 SAMPLES IN EACH BOX**
+Since @fig-explore-1 only considers the mean values of the response variables for each treatment combination, there is potential variability we have not shown.  @fig-boxplot shows two boxplots to show how all observations differ over time.  The left plot contains all samples cut to 1/4 inches thick, while the right plot contains the 1/8 inch thick samples. From the different sizes of boxes we can see the 
+
+
+```{r,,fig.pos="H"}
+#| label: fig-boxplot
+#| echo: false
+#| eval: true
+#| fig-cap: "Boxplot of response variable over time, controlling for thickness and inoculation method."
+
+
+##2. Boxplot
 
 ggplot(data, aes(x = factor(Week), y = Response, fill = Inoculation_Method)) +
   geom_boxplot() +
   facet_wrap(~ Thickness) +
   labs(
-    title = "Response Distribution Across Weeks",
     x = "Week",
     y = "Response",
     fill = "Inoculation Method"
@@ -271,7 +261,7 @@ ggplot(data, aes(x = factor(Week), y = Response, fill = Inoculation_Method)) +
 
 ```
 
-## Exploring the Data
+
 
 ```{r}
 # Load ggplot2 library
@@ -324,25 +314,32 @@ corrplot(time_cor_matrix, method = "circle", type = "upper", tl.col = "black", t
 
 The UN (Unstructured) model provides the best fit based on AIC and BIC, but it requires estimating many parameters. The ARH(1) model is a strong alternative, balancing simplicity with good fit, especially under BIC. The VC (Variance Components) and AR(1) models perform similarly under AICC, with AR(1) offering a simpler time correlation structure. BIC penalizes complexity more than AIC, favoring simpler models like ARH(1) over UN. Overall, UN is ideal for maximum flexibility, while AR(1) or ARH(1) are practical choices for computational efficiency and simplicity.
 
-```{r model-comparison-table, echo=FALSE, message=FALSE, warning=FALSE}
+```{r, fig.pos="H"}
+#| label: fig-model-comparison-table
+#| echo: false
+#| eval: true
+#| fig-cap: "Model comparison table."
+
 # Load necessary libraries
 library(knitr)
 library(kableExtra)
 
 # Model comparison data
-data <- data.frame(
+covstruct <- data.frame(
   Model = c("VC", "UN", "CS", "AR(1)", "ARH(1)", "ANTE", "TOEP"),
   AIC = c(-12.2, -44.2, -17.6, -18.9, -26.6, -28.6, -19.3),
   AICC = c(-12.1, -12.2, -11.3, -12.5, -11.0, -5.4, -6.2),
   BIC = c(-13.0, -18.5, -12.8, -14.0, -15.3, -12.5, -9.7)
 )
 
-# Create and format the table
-data %>%
-  kable("html", caption = "Model Comparison Table") %>%
-  kable_styling("striped", full_width = FALSE, position = "center")
+knitr::kable(
+  covstruct,
+  format = "markdown",
+  align = "c"
+)
 
 ```
+
 
 
 ## Mixed Model
@@ -379,7 +376,7 @@ summary(repeated_model)
 ```
 
 
-3.  Weeks differs accros Batches
+3.  Weeks differs across Batches
 
 ```{r}
 # Fit a mixed-effects model for repeated measures
@@ -423,6 +420,57 @@ library(emmeans)
 
 # Post-hoc pairwise comparisons
 emmeans(repeated_model, pairwise ~ Inoculation_Method * Thickness)
+
+```
+
+
+# EXTRA PLOTS RYAN TOOK OUT - WE CAN PUT BACK IN LATER IF WE WANT
+
+```{r,,fig.pos="H"}
+#| label: fig-hist-2
+#| echo: false
+#| eval: true
+#| fig-cap: "Histograms of response variable controlling for thickness."
+#| layout-ncol: 2
+#| fig-subcap: 
+#|  - "1/4 inch thickness"
+#|  - "1/8 inch thickness"
+#| fig-width: 6
+#| fig-height: 4
+
+ggplot(data, aes(x = Response, fill = Thickness)) +
+  geom_histogram(binwidth = 0.1, color = "black", alpha = 0.7) +
+  facet_wrap(~ Thickness) +
+  labs(
+    x = "Response",
+    y = "Frequency"
+  ) +
+  theme_minimal() +
+  theme(text = element_text(size = 14))
+
+```
+
+```{r,,fig.pos="H"}
+#| label: fig-barplot
+#| echo: false
+#| eval: true
+#| fig-cap: "Barplot of response variable controlling for thickness and inoculation method."
+## 2. Bar Plot
+ggplot(response_summary, aes(x = Thickness, y = Mean_Response, fill = Inoculation_Method)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~ Week) +
+  labs(
+    title = "Mean Response by Thickness and Inoculation Method",
+    x = "Thickness",
+    y = "Mean Response",
+    fill = "Inoculation Method"
+  ) +
+  theme_minimal() +
+  theme(
+    text = element_text(size = 14),
+    legend.position = "bottom"
+  )
+
 
 ```
 
@@ -501,7 +549,7 @@ proc glimmix data=rptm_design;
     contrast '1/4 vs 1/8 inches for Dry inoculation'
         Thickness 1 -1 Inoculation_Method*Thickness 1 -1 0 0;
     contrast '1/4 vs 1/8 inches for Wet inoculation'
-        Thickness 1 -1 Inoculation_Method*Thickness 0 0 1 -1;
+        Thickness 1 -1 Inoculation_Method*Thickness 0 0 1 -1;
                
     ods output contrasts=f_contrast tests3=f_anova;
 run;
