@@ -54,7 +54,7 @@ data <- read.csv("rptm_simulation.csv")
 # Introduction
 
 This paper summarizes the consulting that was done for our assigned STAT 802 group.
-For more information on the experiment, the data, or any other files used in this paper see our [Github page](https://github.com/maksudatoma/Stat-802-Project) which can be found at https://github.com/maksudatoma/Stat-802-Project.
+For more information on the experiment, the data, or any other files used in this paper see our [Github page](https://github.com/maksudatoma/Stat-802-Project) which can be found at \<https://github.com/maksudatoma/Stat-802-Project\>.
 The coding languages used in the paper are R and SAS.
 The corresponding code can be found in *Appendix A - R Code* and *Appendix B - SAS Code* respectively.
 
@@ -83,8 +83,11 @@ In the final model we included the week effect and subsequent interactions as we
 These variables are the fixed effects in the proposed mixed model.
 
 The other variable included in the experiment is the batch number.
-This is a repeated measure and is therefore treated as a random variable.
+This is therefore treated as a random variable.
 As mentioned above, the exact number of batches needed was unknown prior to the power analysis, but five was used as a starting value.
+
+Overall the study employs a 2×2 factorial design with two main factors: Inoculation Method (Dry, Wet) and Thickness (1/4-inch, 1/8-inch).
+Repeated measurements are taken over five equally spaced time points (Weeks 1 to 5), allowing the analysis of both main effects, their interaction, and changes over time.
 
 The model can be written in the form
 
@@ -99,13 +102,11 @@ The three-way interaction between all fixed effects is represented as $(\alpha \
 The random effect for batches is represented by $u_l$, which we assume are distributed as $u_l$\~$N(0,\sigma_u^2)$.
 Lastly, the residuals are represented by $e_{ijkl}$, which we assume can be distributed as $e_{ijkl}$\~$N(0,\sigma^2)$.
 
-**NEED TO ADD IN INFO ON COVARIANCE STRUCTURE**
+# Power Analysis
 
-We reached out to the client later on in the process to determine what contrasts they were most interested in testing.
+Before power analysis, We reached out to the client later on in the process to determine what contrasts they were most interested in testing.
 They expressed they wanted to see the difference between the two levels of the inoculation method, the two levels of the thickness, and the orthogonal contrasts these variable.
 This resulted in six contrasts being tested.
-
-# Power Analysis
 
 To determine the necessary number of batches needed to increase the likelihood of detecting a true treatment effect, we performed a power analysis.
 To do this, probable treatment mean estimates across all five weeks and variance estimates were needed.
@@ -114,25 +115,29 @@ We then used these metrics to create a dataset with five batches where the respo
 This dataset was then evaluated to determine the power.
 The results of the power analysis are shown below.
 
-![Results of power analysis.](Power Output.png)
+![Results of power analysis.](Power%20Output.png)
 
 The first six rows of the table correspond to the contrasts the clients were interested in testing, while the bottom seven rows are measuring the fixed effects of the model.
-Many of the terms have a very high power.
+Many of the terms have more than 80% power.
 Specifically the fixed effects were all high enough for both the clients and ourselves to feel comfortable using five batches.
-Two of the orthogonal contrasts, *Dry vs Wet at 1/4 Inches* and *1/4 vs 1/8 inches for Wet inoculation* did have lower power scores, but after talking with both the clients and Dr. Howard about them, we felt comfortable proceeding.
-
+Two of the orthogonal contrasts, *Dry vs Wet at 1/4 Inches* and *1/4 vs 1/8 inches for Wet inoculation* did have lower power scores, but after talking with both the clients and Dr. Howard about them, we felt comfortable to proceed.
 
 # Simulating Data
 
 After finding the necessary number of batches, which was five, we proceeded with simulating the data.
-The estimated treatment means and variances provided by the client were used in the simulation as well.  We then reviews the simulated dataset for major issues, such as negative response values, and reran the power analysis on the new data set to ensure everything was working properly.  After finding no problems with the dataset, we sent it to your clients.
-
+The estimated treatment means and variances provided by the client were used in the simulation as well.
+We then reviews the simulated dataset for major issues, such as negative response values, and reran the power analysis on the new data set to ensure everything was working properly.
+After finding no problems with the dataset, we sent it to your clients.
+The data set has been added to the appendix.
 
 # Data Analysis
 
 ## Summary Statistics
 
-As part of the project, we analyzed the simulated dataset.  Before fitting out model to the dataset, we first wanted to explore some of the variables.  @fig-sum-stats shows the mean values and standard deviations for each treatment combination.  We can see the changes in mean values are small, so further exploration and analysis are needed. 
+As part of the project, we analyzed the simulated dataset.
+Before fitting out model to the dataset, we first wanted to explore some of the variables.
+@fig-sum-stats shows the mean values and standard deviations for each treatment combination.
+We can see the changes in mean values are small, so further exploration and analysis are needed.
 
 ```{r,,fig.pos="H"}
 #| label: fig-sum-stats
@@ -163,7 +168,11 @@ knitr::kable(
 
 ## Distribution of response variable
 
-Before continuing our investigation into the relationships among the treatment variables, we want to look into the response variable (Salmonella levels).  Specifically, we want to see how it is distributed.    @fig-hist shows a histogram and Q-Q plot of the response variable in the left and right plots respectively.  While the histogram shows a slight potential skew, this is not enough for us say the distribution is non-normal.  Furthermore, the Q-Q plot indicates the response variable follows a relatively normal distribution.
+Before continuing our investigation into the relationships among the treatment variables, we want to look into the response variable (Salmonella levels).
+Specifically, we want to see how it is distributed.
+@fig-hist shows a histogram and Q-Q plot of the response variable in the left and right plots respectively.
+While the histogram shows a slight potential skew, this is not enough for us say the distribution is non-normal.
+Furthermore, the Q-Q plot indicates the response variable follows a relatively normal distribution.
 
 ```{r,,fig.pos="H"}
 #| label: fig-hist
@@ -200,11 +209,13 @@ ggplot(data, aes(sample = Response)) +
 
 ```
 
-
 ## Exploring the Data
 
-Now we will graphically look at how the different variables of the model impact the response variable.  @fig-explore-1 shows how the mean response variables we saw in @fig-sum-stats change over time, while also controlling for thickness and inoculation method.  Note the y-axis of plot does not start at the origin.  We can see the mean values of samples that used a wet inoculation method (blue lines) tended decrease over time, while samples with the dry inoculation method (red lines) were more of a mixed bag but saw sharp increases between weeks four and five.  The samples cut to 1/8 inches thick (dashed lines) were very similar for most weeks, but diverged near the end of the experiment, while samples cut to 1/4 inches thick (solid lines) did not seem as similar.
-
+Now we will graphically look at how the different variables of the model impact the response variable.
+@fig-explore-1 shows how the mean response variables we saw in @fig-sum-stats change over time, while also controlling for thickness and inoculation method.
+Note the y-axis of plot does not start at the origin.
+We can see the mean values of samples that used a wet inoculation method (blue lines) tended decrease over time, while samples with the dry inoculation method (red lines) were more of a mixed bag but saw sharp increases between weeks four and five.
+The samples cut to 1/8 inches thick (dashed lines) were very similar for most weeks, but diverged near the end of the experiment, while samples cut to 1/4 inches thick (solid lines) did not seem as similar.
 
 ```{r,  fig.pos="H"}
 #| label: fig-explore-1
@@ -231,9 +242,10 @@ ggplot(response_summary, aes(x = Week, y = Mean_Response, color = Inoculation_Me
 
 ```
 
-**PROBLEM - ONLY 5 SAMPLES IN EACH BOX**
-Since @fig-explore-1 only considers the mean values of the response variables for each treatment combination, there is potential variability we have not shown.  @fig-boxplot shows two boxplots to show how all observations differ over time.  The left plot contains all samples cut to 1/4 inches thick, while the right plot contains the 1/8 inch thick samples. From the different sizes of boxes we can see the 
-
+**PROBLEM - ONLY 5 SAMPLES IN EACH BOX** Since @fig-explore-1 only considers the mean values of the response variables for each treatment combination, there is potential variability we have not shown.
+@fig-boxplot shows two boxplots to show how all observations differ over time.
+The left plot contains all samples cut to 1/4 inches thick, while the right plot contains the 1/8 inch thick samples.
+From the different sizes of boxes we can see the
 
 ```{r,,fig.pos="H"}
 #| label: fig-boxplot
@@ -261,8 +273,6 @@ ggplot(data, aes(x = factor(Week), y = Response, fill = Inoculation_Method)) +
 
 ```
 
-
-
 ```{r}
 # Load ggplot2 library
 library(ggplot2)
@@ -288,6 +298,8 @@ ggplot(data, aes(x = Week, y = Response, color = Inoculation_Method, group = int
 
 # Correlation Structure
 
+The correlation matrix and plot shows the relationships between repeated measurements over Weeks 1 to 5. Strong correlations are observed between adjacent weeks (e.g., Week 1 vs. Week 2, r=0.69, Week 2 vs. Week 3, r=0.74), indicating temporal dependency. Correlations weaken as the time gap increases (e.g., Week 1 vs. Week 5, r=0.29), reflecting a decay over time. The pattern suggests a structured temporal relationship, supporting the use of models like AR(1) for systematic decay or UN for maximum flexibility.
+
 ```{r}
 
 # Transform the data into wide format with time points as columns
@@ -312,7 +324,9 @@ corrplot(time_cor_matrix, method = "circle", type = "upper", tl.col = "black", t
 
 ## Model Comparison
 
-The UN (Unstructured) model provides the best fit based on AIC and BIC, but it requires estimating many parameters. The ARH(1) model is a strong alternative, balancing simplicity with good fit, especially under BIC. The VC (Variance Components) and AR(1) models perform similarly under AICC, with AR(1) offering a simpler time correlation structure. BIC penalizes complexity more than AIC, favoring simpler models like ARH(1) over UN. Overall, UN is ideal for maximum flexibility, while AR(1) or ARH(1) are practical choices for computational efficiency and simplicity.
+Based on AIC, AR(1) (−12.86) provides the best fit with minimal complexity, followed by ARH(1) (−12.56) and UN (Unstructured) (−12.22), which also performs well. For AICC, AR(1) (−12.55) again leads, reinforcing its suitability for small samples, with ARH(1) and UN close behind. Considering BIC, UN (−18.47) ranks best but is penalized for its complexity, while AR(1) (−15.03) and ARH(1) (−15.09) remain competitive.
+
+Recommendation: AR(1) is the best overall model, balancing fit, simplicity, and suitability for equally spaced time points. UN is a strong alternative for maximum flexibility, while ARH(1) offers a middle-ground option for slightly more flexible variance structures.
 
 ```{r, fig.pos="H"}
 #| label: fig-model-comparison-table
@@ -340,9 +354,22 @@ knitr::kable(
 
 ```
 
+## Model
 
+Considering all facts the best fitted model we're choosing is Auto Regressive (AR1) Model.
 
-## Mixed Model
+**Write down the model structure**
+
+SAS OUTPUT:
+
+AR(1) Model:
+
+![Fig-1](ar-1.png)
+
+![Fig-1](ar-2.png)
+
+![Fig-1](ar-3.png)
+![Fig-1](ar-4.png)
 
 1.  RCBD
 
@@ -374,7 +401,6 @@ repeated_model <- lmer(
 summary(repeated_model)
 
 ```
-
 
 3.  Weeks differs across Batches
 
@@ -422,7 +448,6 @@ library(emmeans)
 emmeans(repeated_model, pairwise ~ Inoculation_Method * Thickness)
 
 ```
-
 
 # EXTRA PLOTS RYAN TOOK OUT - WE CAN PUT BACK IN LATER IF WE WANT
 
@@ -668,11 +693,9 @@ run;
 
 ### Analysis
 
-
 ``` sas
 ```
+
 \newpage
 
 # Appendix C - Additional SAS Output
-
-
