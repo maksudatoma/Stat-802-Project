@@ -694,8 +694,39 @@ run;
 ### Analysis
 
 ``` sas
+
 ```
 
 \newpage
 
 # Appendix C - Additional SAS Output
+
+``` sas
+proc glimmix data=data plots=residualpanel;
+    class Batches Inoculation_Method Thickness Week;
+    model Response = Inoculation_Method|Thickness|Week;
+    random intercept / subject=Batches;
+    random Week / subject=Batches*Inoculation_Method*Thickness type=ar(1) residual;
+    lsmeans Inoculation_Method*Thickness*Week / adjust=tukey cl;
+    
+    /* Define main effect contrasts */
+    contrast 'Dry vs Wet' 
+        Inoculation_Method 1 -1;
+    contrast '1/4 vs 1/8 inches' 
+        Thickness 1 -1;
+
+    /* Define interaction contrasts */
+   contrast 'Dry vs Wet at 1/4 Inches' 
+        Inoculation_Method 1 -1 Inoculation_Method*Thickness 1 0 -1 0; 
+    contrast 'Dry vs Wet at 1/8 Inches' 
+        Inoculation_Method 1 -1 Inoculation_Method*Thickness 0 1 0 -1; 
+    contrast '1/4 vs 1/8 inches for Dry inoculation'
+        Thickness 1 -1 Inoculation_Method*Thickness 1 -1 0 0;
+    contrast '1/4 vs 1/8 inches for Wet inoculation'
+        Thickness 1 -1 Inoculation_Method*Thickness 0 0 1 -1;
+               
+    ods output contrasts=f_contrast tests3=f_anova;
+run;
+
+
+```
