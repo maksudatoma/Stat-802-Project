@@ -294,10 +294,15 @@ corrplot(time_cor_matrix, method = "circle", type = "upper", tl.col = "black", t
 
 ```
 
-## Model Results
+## Model Comparison
 
 After exploring the data we can move on to fitting the model.
-While we were confident in using the AR($1$), we chose to fit the model using other covariance structures as well so we could see how the fit compares.  The results are shown in @fig-model-comparison-table.  For each of the fit statistics in this table a lower score is better, even when looking at negative values. (@Statology). This means the model fit using an AR($1$) structure had the best AIC and AICC scores and a respectable BIC score.  This verifies our choice in the AR($1$) covariance structure. 
+While we were confident in using the AR($1$), we chose to fit the model using other covariance structures as well so we could see how the fit compares.
+The results are shown in @fig-model-comparison-table.
+For each of the fit statistics in this table a lower score is better, even when looking at negative values.
+(@Statology).
+This means the model fit using an AR($1$) structure had the best AIC and AICC scores and a respectable BIC score.
+This verifies our choice in the AR($1$) covariance structure.
 
 ```{r, fig.pos="H"}
 #| label: fig-model-comparison-table
@@ -321,16 +326,38 @@ knitr::kable(
 
 ```
 
-After verifying the fit of the AR($1$) covariance structure for the repeated measures, we needed to see if the assumptions for a linear mixed model were violated.  These include the residuals being normally distributed and homogeneous.  The plots below allow us to evaluate these assumptions.  To graphically test normality, we can look at both the histogram (top right) and the Q-Q plot (bottom left).  These both appear approximately normal, indicating the assumption holds.   The boxplot (bottom right) can also show normality as well as potential outliers. It appears there is one outlier, but the normallity assmption still holds.  The residual plot (top left) allows us to check if the homogeneous assumption holds, and it appears to since the points seem somewhat randomly distributed with no clear pattern.  Since the assumptions are holding, we can proceed with the linear mixed model.
+After verifying the fit of the AR($1$) covariance structure for the repeated measures, we needed to see if the assumptions for a linear mixed model were violated or not.
+These include the residuals being normally distributed and homogeneous.
+The plots below allow us to evaluate these assumptions.
+To graphically test normality, we can look at both the histogram (top right) and the Q-Q plot (bottom left).
+These both appear approximately normal, indicating the assumption holds.
+The boxplot (bottom right) can also show normality as well as potential outliers.
+It appears there is one outlier, but the normallity assmption still holds.
+The residual plot (top left) allows us to check if the homogeneous assumption holds, and it appears to since the points seem somewhat randomly distributed with no clear pattern.
+Since the assumptions are holding, we can proceed with the linear mixed model.
 
-![Residual plots for checking assumptions.](ar-4.png){width=4in}
+![Residual plots for checking assumptions.](ar-4.png){width="4in"}
 
+<<<<<<< Updated upstream
 Below are three tables from the SAS output.  The first is the *Fit Statistics* table, which is where the metrics used in @fig-model-comparison-table come from.  The *Covariance Parameter Estimates* table shows how much of the variance in the model is explained by the random terms.  The *Type III Tests of Fixed Effects* table allows us to see if the fixed effects and/or their interactions are significant by looking at the p-values reported in the `PR > F` column.  We first need to look at the interaction terms.  While the three-way interaction between the inoculation method, thickness, and week is not significant, all three two-way interactions between these variables are.  Therefore, we need to consider simple effects.
 
 ![*Fit Statistics*, *Covariance Parameter Estimates*, and *Type III Tests of Fixed Effects* tables.](ar-1.png){width=3.5in}
 
 ![LS Means table.](ar-3.png){width=5in}
+=======
+Below are three tables from the SAS output.
+The first is the *Fit Statistics* table, which is where the metrics used in @fig-model-comparison-table come from.
+The *Covariance Parameter Estimates* table shows how much of the variance in the model is explained by the random terms.
 
+The *Type III Tests of Fixed Effects* table allows us to see if the fixed effects and/or their interactions are significant by looking at the p-values reported in the `PR > F` column.
+We first need to look at the interaction terms.
+While the three-way interaction between the inoculation method, thickness, and week is not significant, all three two-way interactions between these variables are.
+Therefore, we need to consider simple effects.
+
+![*Fit Statistics*, *Covariance Parameter Estimates*, and *Type III Tests of Fixed Effects* tables.](ar-1.png){width="3.5in"}
+>>>>>>> Stashed changes
+
+![LS Means table.](ar-3.png){width="5in"}
 
 ```{r, fig.pos="H"}
 #| label: fig-simple-effects
@@ -340,15 +367,9 @@ Below are three tables from the SAS output.  The first is the *Fit Statistics* t
 
 ```
 
-
 **Write down the model structure**
 
-
-
-![Contrasts table.](ar-2.png){width=3.5in}
-
-
-
+![Contrasts table.](ar-2.png){width="3.5in"}
 
 # Conclusion
 
