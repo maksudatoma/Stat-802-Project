@@ -325,11 +325,7 @@ After verifying the fit of the AR($1$) covariance structure for the repeated mea
 
 ![Residual plots for checking assumptions.](ar-4.png){width=4in}
 
-Below are three tables from the SAS output.  The first is the *Fit Statistics* table, which is where the metrics used in @fig-model-comparison-table come from.  The *Covariance Parameter Estimates* table shows how much of the variance in the model is explained by the random terms.  
-
-**HEY TOMA - Is it ok for covariance estimate to be negative?**
-
-The *Type III Tests of Fixed Effects* table allows us to see if the fixed effects and/or their interactions are significant by looking at the p-values reported in the `PR > F` column.  We first need to look at the interaction terms.  While the three-way interaction between the inoculation method, thickness, and week is not significant, all three two-way interactions between these variables are.  Therefore, we need to consider simple effects.
+Below are three tables from the SAS output.  The first is the *Fit Statistics* table, which is where the metrics used in @fig-model-comparison-table come from.  The *Covariance Parameter Estimates* table shows how much of the variance in the model is explained by the random terms.  The *Type III Tests of Fixed Effects* table allows us to see if the fixed effects and/or their interactions are significant by looking at the p-values reported in the `PR > F` column.  We first need to look at the interaction terms.  While the three-way interaction between the inoculation method, thickness, and week is not significant, all three two-way interactions between these variables are.  Therefore, we need to consider simple effects.
 
 ![*Fit Statistics*, *Covariance Parameter Estimates*, and *Type III Tests of Fixed Effects* tables.](ar-1.png){width=3.5in}
 
