@@ -338,28 +338,28 @@ Since the assumptions are holding, we can proceed with the linear mixed model.
 
 ![Residual plots for checking assumptions.](ar-4.png){width="4in"}
 
-# Model Output
+## Model Output
 
+**I dont't think we need this - Ryan**
 PROC GLIMMIX was implemented in SAS where reponse variable (y) is Gaussian and the link function used is ‘identity’. The ‘class level information’ table displays the number of levels and their values in the dataset for categorical
-variables.The model successfully converges. Various model fit statistics are produced.
+variables. The model successfully converges. Various model fit statistics are produced.
 
 ![Fig](ar-1'.png)
 
 Below are three tables from the SAS output.  The first is the *Fit Statistics* table, which is where the metrics used in @fig-model-comparison-table come from.  The *Covariance Parameter Estimates* table shows how much of the variance in the model is explained by the random terms.  The *Type III Tests of Fixed Effects* table allows us to see if the fixed effects and/or their interactions are significant by looking at the p-values reported in the `PR > F` column. 
 
-The model successfully converged, and various model fit statistics are provided. The table of ‘Covariance Parameter Estimates’ provides the estimates for the variance components in the model. The estimated variance for the random intercept (batches) is 0.03802, with a standard error of 0.02755. The estimate for the AR(1) autocorrelation structure is -0.2140, capturing the weak negative correlation between adjacent time points. Lastly, the residual variance is estimated as 0.02064, with a standard error of 0.004423. These estimates quantify the variability in the model across batches, within-subject repeated measures, and unexplained residual variability.
-
-Among the fixed effects, Inoculation_Method (p=0.0286), Thickness (p<0.0001), and Week (p=0.0216) significantly influence the response, with notable interactions between Inoculation_Method*Thickness (p<0.0001) and Thickness*Week (p=0.0006), highlighting combined effects. However, the interactions Inoculation_Method*Week (p=0.1529) and Inoculation_MethodThicknessWeek (p=0.6970) are not significant, suggesting they do not substantially impact the response.
-
-Overall, we can say that the method of inoculation, the thickness of the beef jerky, and the week of measurement all have significant effects on the outcome. Additionally, the way the method of inoculation and thickness work together plays an important role, as does how thickness changes over time. However, the combination of all three factors (inoculation method, thickness, and week) does not appear to have a meaningful impact.
-
 ![*Fit Statistics*, *Covariance Parameter Estimates*, and *Type III Tests of Fixed Effects* tables.](ar-1.png){width=3.5in}
-This table shows the least squares means (LSMeans) for combinations of Inoculation_Method, Thickness, and Week, representing the estimated response for each factor combination (e.g., "Dry, 1/4-inch, Week 1"). The estimates are highly significant (p<0.0001) for all combinations, with confidence intervals providing ranges for each mean. Key statistics include the standard error, degrees of freedom, t-values, and p-values, reflecting the precision and significance of the estimates.
 
-**Easy Interpretation for client**
-The table summarizes how the response variable changes across combinations of inoculation methods, material thickness, and weeks. For example, for the 1/4-inch thickness, both Dry and Wet methods show increases over time, but the Dry method typically has higher responses. Similarly, for the 1/8-inch thickness, the differences between Dry and Wet methods are smaller but still present. Confidence intervals provide assurance about the reliability of these estimates, and all results are statistically significant, confirming the trends observed.
+
+The estimated variance for the random intercept (batches) is 0.03802, with a standard error of 0.02755. The estimate for the AR(1) autocorrelation structure is -0.2140, capturing the weak negative correlation between adjacent time points. Lastly, the residual variance is estimated as 0.02064, with a standard error of 0.004423. These estimates quantify the variability in the model across batches, within-subject repeated measures, and unexplained residual variability.
+
+For the fixed effects we first need to consider the interaction terms.  While the three-way interaction between the inoculation method, thickness, and week is not significant, all three two-way interactions between these variables are highly significant (p\<0.0001).  Therefore, we need to consider simple effects.  Overall we can say each respective two-way interaction does have an impact on the data.
+
+The next table shows the least squares means (LSMeans) for combinations of the  inoculation method, thickness, and week, representing the estimated response for each factor combination. The estimates are highly significant (p\<0.0001) for all combinations, with confidence intervals providing ranges for each mean. Key statistics include the standard error, degrees of freedom, t-values, and p-values, reflecting the precision and significance of the estimates.
 
 ![LS Means table.](ar-3.png){width=5in}
+
+The table summarizes how the response variable changes across combinations of inoculation methods, material thickness, and weeks. For example, for the 1/4-inch thickness, both Dry and Wet methods show increases over time, but the Dry method typically has higher responses. Similarly, for the 1/8-inch thickness, the differences between Dry and Wet methods are smaller but still present. Confidence intervals provide assurance about the reliability of these estimates, and all results are statistically significant, confirming the trends observed.
 
 This output provides detailed results for the interaction of Inoculation_Method and Thickness. The least squares means (LSMeans) indicate that for both Dry and Wet inoculation methods, 1/8-inch thickness has significantly higher responses compared to 1/4-inch thickness (p<0.0001). Pairwise comparisons confirm significant differences, such as Dry 1/4-inch vs. 1/8-inch (p<0.0001) and Wet 1/4-inch vs. 1/8-inch (p=0.0209). Differences between inoculation methods (e.g., Dry 1/4-inch vs. Wet 1/4-inch) are also significant, with Wet showing slightly higher means. These findings highlight strong interaction effects, emphasizing that the relationship between inoculation method and response varies depending on the material thickness.
 
