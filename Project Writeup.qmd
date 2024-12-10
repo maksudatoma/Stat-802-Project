@@ -340,38 +340,75 @@ Since the assumptions are holding, we can proceed with the linear mixed model.
 
 ## Model Output
 
-**I dont't think we need this - Ryan**
-PROC GLIMMIX was implemented in SAS where reponse variable (y) is Gaussian and the link function used is ‘identity’. The ‘class level information’ table displays the number of levels and their values in the dataset for categorical
-variables. The model successfully converges. Various model fit statistics are produced.
+**I dont't think we need this - Ryan** PROC GLIMMIX was implemented in SAS where reponse variable (y) is Gaussian and the link function used is 'identity'.
+The 'class level information' table displays the number of levels and their values in the dataset for categorical variables.
+The model successfully converges.
+Various model fit statistics are produced.
 
 ![Fig](ar-1'.png)
 
-Below are three tables from the SAS output.  The first is the *Fit Statistics* table, which is where the metrics used in @fig-model-comparison-table come from.  The *Covariance Parameter Estimates* table shows how much of the variance in the model is explained by the random terms.  The *Type III Tests of Fixed Effects* table allows us to see if the fixed effects and/or their interactions are significant by looking at the p-values reported in the `PR > F` column. 
+Below are three tables from the SAS output.
+The first is the *Fit Statistics* table, which is where the metrics used in @fig-model-comparison-table come from.
+The *Covariance Parameter Estimates* table shows how much of the variance in the model is explained by the random terms.
+The *Type III Tests of Fixed Effects* table allows us to see if the fixed effects and/or their interactions are significant by looking at the p-values reported in the `PR > F` column.
 
-![*Fit Statistics*, *Covariance Parameter Estimates*, and *Type III Tests of Fixed Effects* tables.](ar-1.png){width=3.5in}
+![*Fit Statistics*, *Covariance Parameter Estimates*, and *Type III Tests of Fixed Effects* tables.](ar-1.png){width="3.5in"}
 
+The estimated variance for the random intercept (batches) is 0.03802, with a standard error of 0.02755.
+The estimate for the AR(1) autocorrelation structure is -0.2140, capturing the weak negative correlation between adjacent time points.
+Lastly, the model fits the data reasonably well, with the residual variance (0.02064) indicating minimal unexplained variability, and the SE (0.004423) confirming the reliability of this estimate.
 
-The estimated variance for the random intercept (batches) is 0.03802, with a standard error of 0.02755. The estimate for the AR(1) autocorrelation structure is -0.2140, capturing the weak negative correlation between adjacent time points. Lastly, the residual variance is estimated as 0.02064, with a standard error of 0.004423. These estimates quantify the variability in the model across batches, within-subject repeated measures, and unexplained residual variability.
+For the fixed effects we first need to consider the interaction terms.
+While the three-way interaction between the inoculation method, thickness, and week is not significant, all three two-way interactions between these variables are highly significant (p\<0.0001).
+Therefore, we need to consider simple effects.
+Overall we can say each respective two-way interaction does have an impact on the data.
 
-For the fixed effects we first need to consider the interaction terms.  While the three-way interaction between the inoculation method, thickness, and week is not significant, all three two-way interactions between these variables are highly significant (p\<0.0001).  Therefore, we need to consider simple effects.  Overall we can say each respective two-way interaction does have an impact on the data.
+The next table shows the least squares means (LSMeans) for combinations of the inoculation method, thickness, and week, representing the estimated response for each factor combination.
+The estimates are highly significant (p\<0.0001) for all combinations, with confidence intervals providing ranges for each mean.
+Key statistics include the standard error, degrees of freedom, t-values, and p-values, reflecting the precision and significance of the estimates.
 
-The next table shows the least squares means (LSMeans) for combinations of the  inoculation method, thickness, and week, representing the estimated response for each factor combination. The estimates are highly significant (p\<0.0001) for all combinations, with confidence intervals providing ranges for each mean. Key statistics include the standard error, degrees of freedom, t-values, and p-values, reflecting the precision and significance of the estimates.
+![LS Means table.](ar-3.png){width="5in"}
 
-![LS Means table.](ar-3.png){width=5in}
+# LS mean compariso for interaction
 
-The table summarizes how the response variable changes across combinations of inoculation methods, material thickness, and weeks. For example, for the 1/4-inch thickness, both Dry and Wet methods show increases over time, but the Dry method typically has higher responses. Similarly, for the 1/8-inch thickness, the differences between Dry and Wet methods are smaller but still present. Confidence intervals provide assurance about the reliability of these estimates, and all results are statistically significant, confirming the trends observed.
+The table summarizes how the response variable changes across combinations of inoculation methods, thickness, and weeks.
+For example, for the 1/4-inch thickness, both Dry and Wet methods show increases over time, but the Dry method typically has higher responses.
+Similarly, for the 1/8-inch thickness, the differences between Dry and Wet methods are smaller but still present.
+Confidence intervals provide assurance about the reliability of these estimates, and all results are statistically significant, confirming the trends observed.
 
-This output provides detailed results for the interaction of Inoculation_Method and Thickness. The least squares means (LSMeans) indicate that for both Dry and Wet inoculation methods, 1/8-inch thickness has significantly higher responses compared to 1/4-inch thickness (p<0.0001). Pairwise comparisons confirm significant differences, such as Dry 1/4-inch vs. 1/8-inch (p<0.0001) and Wet 1/4-inch vs. 1/8-inch (p=0.0209). Differences between inoculation methods (e.g., Dry 1/4-inch vs. Wet 1/4-inch) are also significant, with Wet showing slightly higher means. These findings highlight strong interaction effects, emphasizing that the relationship between inoculation method and response varies depending on the material thickness.
+This output provides detailed results for the interaction of Inoculation_Method and Thickness.
+The least squares means (LSMeans) indicate that for both Dry and Wet inoculation methods, 1/8-inch thickness has significantly higher responses compared to 1/4-inch thickness (p\<0.0001).
+Pairwise comparisons confirm significant differences, such as Dry 1/4-inch vs. 1/8-inch (p\<0.0001) and Wet 1/4-inch vs. 1/8-inch (p=0.0209).
+Differences between inoculation methods (e.g., Dry 1/4-inch vs. Wet 1/4-inch) are also significant, with Wet showing slightly higher means.
+These findings highlight strong interaction effects, emphasizing that the relationship between inoculation method and response varies depending on the material thickness.
 
-Overall, both the inoculation method (Dry or Wet) and the thickness (1/4-inch or 1/8-inch) significantly affect the outcome, and these effects depend on each other. For both methods, the 1/8-inch thickness consistently leads to higher responses compared to 1/4-inch thickness. When comparing Dry and Wet methods, Wet generally performs slightly better, especially for 1/4-inch thickness. However, the differences between Dry and Wet are more noticeable at 1/8-inch thickness, highlighting that the combination of method and thickness plays a key role. These findings suggest that to optimize results, we need to carefully consider the interaction between the method used and the thickness of the material.
+Overall, both the inoculation method (Dry or Wet) and the thickness (1/4-inch or 1/8-inch) significantly affect the outcome, and these effects depend on each other.
+For both methods, the 1/8-inch thickness consistently leads to higher responses compared to 1/4-inch thickness.
+When comparing Dry and Wet methods, Wet generally performs slightly better, especially for 1/4-inch thickness.
+However, the differences between Dry and Wet are more noticeable at 1/8-inch thickness, highlighting that the combination of method and thickness plays a key role.
+These findings suggest that to optimize results, we need to carefully consider the interaction between the method used and the thickness of the material.
 
 ![fig](ar-5.png)
 
-**NOTE: Should we show other two way significant interaction as well like this?**
+**Inoculation Method*Week**
 
+The interaction between inoculation method and time (Week) is evident, with Dry inoculation showing an increase in Week 5 and Wet inoculation peaking earlier. This indicates that the timing of bacterial growth depends on the inoculation method used.
 
+![fig](ar-6.png)
 
+The interaction between Inoculation_Method and Week is significant, with differences in bacterial growth patterns being particularly pronounced for Week 5, where the Dry method shows significantly higher responses than Wet. This suggests the impact of inoculation method depends on the week of measurement.
 
+![fig](ar-7.png)
+The results show that bacterial growth varies significantly across weeks for both thicknesses, with the effect being stronger for 1/8-inch thickness (F=17.53,p<0.0001) than for 1/4-inch (F=3.19,p=0.0179). Thickness differences are most pronounced in Weeks 1 and 2, where 1/8-inch slices show significantly higher bacterial growth compared to 1/4-inch (p<0.0001). By Week 5, the effect of thickness is no longer significant (F=0.32,p=0.5723), suggesting bacterial growth levels stabilize between the two thicknesses.
+
+1/8-inch thickness facilitates higher bacterial growth compared to 1/4-inch across all weeks, with Week 2 showing the highest LSMean for 1/8-inch. This highlights that the combination of thinner slices and Week 2 conditions create the most favorable environment for bacterial growth.
+
+![fig](ar-8.png)
+
+The 1/8-inch thickness shows greater variability in bacterial growth across weeks, highlighting its susceptibility.
+Thickness differences are most significant in Weeks 1 and 2, where thinner slices (1/8-inch) show much higher bacterial growth than thicker slices (1/4-inch). By Week 5, the effect of thickness diminishes, suggesting bacterial growth stabilizes between the two thicknesses.
+
+![fig](ar-9.png)
 
 ```{r, fig.pos="H"}
 #| label: fig-simple-effects
