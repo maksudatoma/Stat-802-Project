@@ -350,7 +350,7 @@ Various model fit statistics are produced.
 Below are three tables from the SAS output.
 The first is the *Fit Statistics* table, which is where the metrics used in @fig-model-comparison-table come from.
 The *Covariance Parameter Estimates* table shows how much of the variance in the model is explained by the random terms.
-The *Type III Tests of Fixed Effects* table allows us to see if the fixed effects and/or their interactions are significant by looking at the p-values reported in the `PR > F` column.
+The *Type III Tests of Fixed Effects* table allows us to see if the fixed effects and/or their interactions are significant by looking at the p-values reported in the `Pr > F` column.
 
 ![*Fit Statistics*, *Covariance Parameter Estimates*, and *Type III Tests of Fixed Effects* tables.](ar-1.png){width="3.5in"}
 
@@ -369,7 +369,7 @@ Key statistics include the standard error, degrees of freedom, t-values, and p-v
 
 ![LS Means table.](ar-3.png){width="5in"}
 
-# LS mean compariso for interaction
+# LS mean comparison for interaction
 
 The table summarizes how the response variable changes across combinations of inoculation methods, thickness, and weeks.
 For example, for the 1/4-inch thickness, both Dry and Wet methods show increases over time, but the Dry method typically has higher responses.
@@ -390,7 +390,7 @@ These findings suggest that to optimize results, we need to carefully consider t
 
 ![fig](ar-5.png)
 
-**Inoculation Method*Week**
+**Inoculation Method \times Week**
 
 The interaction between inoculation method and time (Week) is evident, with Dry inoculation showing an increase in Week 5 and Wet inoculation peaking earlier. This indicates that the timing of bacterial growth depends on the inoculation method used.
 
