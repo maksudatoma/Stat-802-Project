@@ -47,13 +47,6 @@ data <- read.csv("rptm_simulation.csv")
 
 ```
 
-```{r,  fig.pos="H"}
-#| label: Scratch-work-1
-#| echo: false
-#| eval: false
-
-```
-
 # Introduction
 
 This paper summarizes the consulting that was done for our assigned STAT 802 group.
@@ -214,28 +207,28 @@ ggplot(data, aes(sample = Response)) +
 
 ## Exploring the Data
 
-Now we will graphically look at how the different variables of the model impact the response variable.
-@fig-explore-1 shows how the mean response variables we saw in @fig-sum-stats change over time, while also controlling for thickness and inoculation method.
-Note the y-axis of plot does not start at the origin.
-We can see the mean values of samples that used a wet inoculation method (blue lines) tended decrease over time, while samples with the dry inoculation method (red lines) were more of a mixed bag but saw sharp increases between weeks four and five.
-The samples cut to 1/8 inches thick (dashed lines) were very similar for most weeks, but diverged near the end of the experiment, while samples cut to 1/4 inches thick (solid lines) did not seem as similar.
+Now we will graphically look at how the different variables of the model impact the response variable.  @fig-explore-1 shows two interaction plots with one being for samples cut to 1/4-inches and the other for 1/8-inch samples.  Each one shows the relationship between the two inoculation methods over the five weeks for the respective thickness.  At the 1/4-inch level, the dry and wet methods start at a similar level but then change over time.  The dry method appears to stay a lower level for the first few weeks, but then rise sharply.  The opposite trend occurs for the wet method.  At the 1/8-inch level, the two methods are similar until the fifth week when the measurement of the wet method decreases and the dry method increases.  In both plots we seem to have interaction among the the variables, so that will need to be investigated further.
+
 
 ```{r,  fig.pos="H"}
 #| label: fig-explore-1
 #| echo: false
 #| eval: true
-#| fig-cap: "Line plot of response variable over time, controlling for thickness and inoculation method."
+#| fig-cap: "Interaction plots of inoculation method and time for each each thickenss level."
 #| fig-width: 6
 #| fig-height: 4
 
-ggplot(response_summary, aes(x = Week, y = Mean_Response, color = Inoculation_Method, group = interaction(Inoculation_Method, Thickness))) +
-  geom_line(aes(linetype = Thickness), size = 1) +
-  geom_point(size = 2) +
+
+ggplot(data, aes(x = Week, y = Response, 
+                 color = Inoculation_Method, 
+                 group = interaction(Inoculation_Method, Thickness))) +
+  geom_line(stat = "summary", fun = mean, size = 1) +  
+  geom_point(stat = "summary", fun = mean, size = 2) + 
+  facet_wrap(~ Thickness) +                           
   labs(
     x = "Week",
     y = "Mean Response",
-    color = "Inoculation Method",
-    linetype = "Thickness"
+    color = "Inoculation Method"
   ) +
   theme_minimal() +
   theme(
@@ -328,7 +321,7 @@ knitr::kable(
 
 After verifying the fit of the AR($1$) covariance structure for the repeated measures, we needed to see if the assumptions for a linear mixed model were violated or not.
 These include the residuals being normally distributed and homogeneous.
-The plots below allow us to evaluate these assumptions.
+The plots in @fig-res allow us to evaluate these assumptions.
 To graphically test normality, we can look at both the histogram (top right) and the Q-Q plot (bottom left).
 These both appear approximately normal, indicating the assumption holds.
 The boxplot (bottom right) can also show normality as well as potential outliers.
@@ -336,40 +329,31 @@ It appears there is one outlier, but the normallity assmption still holds.
 The residual plot (top left) allows us to check if the homogeneous assumption holds, and it appears to since the points seem somewhat randomly distributed with no clear pattern.
 Since the assumptions are holding, we can proceed with the linear mixed model.
 
-![Residual plots for checking assumptions.](ar-4.png){width="4in"}
+![Residual plots for checking assumptions.](ar-4.png){#fig-res width="4in"}
 
 ## Model Output
 
-**I dont't think we need this - Ryan** PROC GLIMMIX was implemented in SAS where reponse variable (y) is Gaussian and the link function used is 'identity'.
-The 'class level information' table displays the number of levels and their values in the dataset for categorical variables.
-The model successfully converges.
-Various model fit statistics are produced.
+We can now look at some of the output from fitting the linear mixed model in SAS. @fig-fit shows three tables from this output. The first is the *Fit Statistics* table, which is where the metrics used in @fig-model-comparison-table come from. These metrics indicate the fit of the model, which seems fine to us.
+The second table is the *Covariance Parameter Estimates* table and it shows how much of the variance in the model is explained by the random terms.  We can see all three values are fairly small, with the estimated variance for the AR(1) autocorrelation structure actually being negative (-0.2140).  This negative value shows a weak negative correlation between adjacent time points.
+The small values for the estimated residual variance (0.02664) is good news as it means there is minimal unexplained variability in this model.
 
-![Fig](ar-1'.png)
+\newpage
+![*Fit Statistics*, *Covariance Parameter Estimates*, and *Type III Tests of Fixed Effects* tables.](ar-1.png){#fig-fit width="3in"}
 
-Below are three tables from the SAS output.
-The first is the *Fit Statistics* table, which is where the metrics used in @fig-model-comparison-table come from.
-The *Covariance Parameter Estimates* table shows how much of the variance in the model is explained by the random terms.
-The *Type III Tests of Fixed Effects* table allows us to see if the fixed effects and/or their interactions are significant by looking at the p-values reported in the `Pr > F` column.
+The last table in @fig-fit is the *Type III Tests of Fixed Effects* table.  This allows us to see if the fixed effects are significant by looking at the p-values reported in the `Pr > F` column.  We must first consider the significance of the interaction effects and only look at main effects if the interaction effects are insignificant.  While the three-way interaction between the inoculation method, thickness, and week is not significant, all three two-way interactions between these variables are highly significant (p\<0.0001).  Therefore, we need to consider simple effects. Overall we can say each respective two-way interaction does have an impact on the data.  This validates what we saw in @fig-explore-1.
 
-![*Fit Statistics*, *Covariance Parameter Estimates*, and *Type III Tests of Fixed Effects* tables.](ar-1.png){width="3.5in"}
+Since we found three significant two-way interactions we will need to look at the *Least Squares Means* output for each interaction.  The first one we are looking at is for the interaction between inoculation method and thickness.  This can be seen in @fig-iXt.  These tables allow us to see how the variables interact at each level.  
 
-The estimated variance for the random intercept (batches) is 0.03802, with a standard error of 0.02755.
-The estimate for the AR(1) autocorrelation structure is -0.2140, capturing the weak negative correlation between adjacent time points.
-Lastly, the model fits the data reasonably well, with the residual variance (0.02064) indicating minimal unexplained variability, and the SE (0.004423) confirming the reliability of this estimate.
+![*Least Squares Means* output for inoculation method and thickness interaction.](ar-5.png){#fig-iXt width="80%"}
 
-For the fixed effects we first need to consider the interaction terms.
-While the three-way interaction between the inoculation method, thickness, and week is not significant, all three two-way interactions between these variables are highly significant (p\<0.0001).
-Therefore, we need to consider simple effects.
-Overall we can say each respective two-way interaction does have an impact on the data.
+We can see from the *Least Squares Means* table that all the combinations are significant, but we want to look closer at the differences in the second table.  Once again all the differences between each possible combination of inoculation method and thickness are significant since the largest p-value is 0.0209.  We can see the largest difference is between the combinations of 1/4-inch with dry inoculation and 1/8-inch with dry inoculation.  The negative difference implies the 1/8-inch pieces have significantly lower values, which is what we want.  The smallest difference was involved the two thicknesses with wet inoculation.  This indicates both preform in a similar way with the 1/8-inch pieces performing slightly but significantly better.
 
-The next table shows the least squares means (LSMeans) for combinations of the inoculation method, thickness, and week, representing the estimated response for each factor combination.
-The estimates are highly significant (p\<0.0001) for all combinations, with confidence intervals providing ranges for each mean.
-Key statistics include the standard error, degrees of freedom, t-values, and p-values, reflecting the precision and significance of the estimates.
+# ------------------------
+# WHERE I STOPPED
+## Are there any tables we don't need
 
-![LS Means table.](ar-3.png){width="5in"}
 
-# LS mean comparison for interaction
+## LS mean comparison for interaction
 
 The table summarizes how the response variable changes across combinations of inoculation methods, thickness, and weeks.
 For example, for the 1/4-inch thickness, both Dry and Wet methods show increases over time, but the Dry method typically has higher responses.
@@ -388,39 +372,33 @@ When comparing Dry and Wet methods, Wet generally performs slightly better, espe
 However, the differences between Dry and Wet are more noticeable at 1/8-inch thickness, highlighting that the combination of method and thickness plays a key role.
 These findings suggest that to optimize results, we need to carefully consider the interaction between the method used and the thickness of the material.
 
-![fig](ar-5.png)
-
 **Inoculation Method \times Week**
 
 The interaction between inoculation method and time (Week) is evident, with Dry inoculation showing an increase in Week 5 and Wet inoculation peaking earlier. This indicates that the timing of bacterial growth depends on the inoculation method used.
 
-![fig](ar-6.png)
+![fig6](ar-6.png){#fig-iXW width="70%"}
 
 The interaction between Inoculation_Method and Week is significant, with differences in bacterial growth patterns being particularly pronounced for Week 5, where the Dry method shows significantly higher responses than Wet. This suggests the impact of inoculation method depends on the week of measurement.
 
-![fig](ar-7.png)
+![fig9](ar-7.png){#fig-iXw-slice}
+
 The results show that bacterial growth varies significantly across weeks for both thicknesses, with the effect being stronger for 1/8-inch thickness (F=17.53,p<0.0001) than for 1/4-inch (F=3.19,p=0.0179). Thickness differences are most pronounced in Weeks 1 and 2, where 1/8-inch slices show significantly higher bacterial growth compared to 1/4-inch (p<0.0001). By Week 5, the effect of thickness is no longer significant (F=0.32,p=0.5723), suggesting bacterial growth levels stabilize between the two thicknesses.
 
 1/8-inch thickness facilitates higher bacterial growth compared to 1/4-inch across all weeks, with Week 2 showing the highest LSMean for 1/8-inch. This highlights that the combination of thinner slices and Week 2 conditions create the most favorable environment for bacterial growth.
 
-![fig](ar-8.png)
+![fig8](ar-8.png){#fig-tXW}
 
 The 1/8-inch thickness shows greater variability in bacterial growth across weeks, highlighting its susceptibility.
 Thickness differences are most significant in Weeks 1 and 2, where thinner slices (1/8-inch) show much higher bacterial growth than thicker slices (1/4-inch). By Week 5, the effect of thickness diminishes, suggesting bacterial growth stabilizes between the two thicknesses.
 
-![fig](ar-9.png)
 
-```{r, fig.pos="H"}
-#| label: fig-simple-effects
-#| echo: false
-#| eval: true
-#| fig-cap: ""
 
-```
+![fig9](ar-9.png){#fig-tXW-slice}
 
-**Write down the model structure**
+\newpage
+**I think we can cut the contrast table.  Or did I misunderstand what she said during the presentation?**
 
-![Contrasts table.](ar-2.png){width="3.5in"}
+![Contrasts table.](ar-2.png){#fig-con width="3.5in"}
 
 # Conclusion
 
@@ -441,7 +419,110 @@ Thickness differences are most significant in Weeks 1 and 2, where thinner slice
 #| label: appendix A
 #| echo: true
 #| eval: false
+library(knitr)
+library(dplyr)
+library(ggplot2)
+library(naniar)
+library(reshape2)
+library(GGally)
+library(janitor)
+library(emmeans)
+library(MASS)
+library(multcomp)
+library(lme4)
+library(nnet)
+library(tidyr)
+library(knitr)
+library(kableExtra)
+library(corrplot)
 
+data <- read.csv("rptm_simulation.csv")
+
+response_summary <- data %>%
+  group_by(Inoculation_Method, Thickness, Week) %>%
+  summarise(
+    Mean_Response = mean(Response, na.rm = TRUE),
+    SD_Response = sd(Response, na.rm = TRUE),
+    Count = n()
+  )
+
+knitr::kable(
+  response_summary,
+  caption = "Summary of response rariable across factors and weeks",
+  digits = 3, 
+  col.names = c("Inoculation Method", "Thickness", "Week", "Mean Response", 
+                "SD Response", "Count"),
+  format = "markdown"
+)
+
+ggplot(data, aes(x = Response)) +
+  geom_histogram(binwidth = 0.1, color = "black", fill = "skyblue") +
+  labs(
+    x = "Response",
+    y = "Frequency"
+  ) +
+  theme_minimal() +
+  theme(text = element_text(size = 14))
+
+ggplot(data, aes(sample = Response)) +
+  stat_qq(color = "black") +
+  stat_qq_line(color = "red", linetype = "dashed") +
+  labs(
+    x = "Theoretical Quantiles",
+    y = "Sample Quantiles"
+  ) +
+  theme_minimal() +
+  theme(text = element_text(size = 14))
+
+ggplot(data, aes(x = Week, y = Response, 
+                 color = Inoculation_Method, 
+                 group = interaction(Inoculation_Method, Thickness))) +
+  geom_line(stat = "summary", fun = mean, size = 1) +  
+  geom_point(stat = "summary", fun = mean, size = 2) + 
+  facet_wrap(~ Thickness) +                           
+  labs(
+    x = "Week",
+    y = "Mean Response",
+    color = "Inoculation Method"
+  ) +
+  theme_minimal() +
+  theme(
+    text = element_text(size = 14),
+    legend.position = "bottom"
+  )
+
+wide_data <- pivot_wider(data, names_from = Week, values_from = Response)
+
+time_data <- wide_data[ , -1] 
+time_data <- time_data[sapply(time_data, is.numeric)]
+
+time_cor_matrix <- cor(time_data, use = "pairwise.complete.obs")
+
+cor_df <- as.data.frame(time_cor_matrix)
+cor_df <- cbind(Time = rownames(cor_df), cor_df)
+
+kable(
+  cor_df,
+  digits = 2,
+  col.names = c("Time", colnames(time_cor_matrix)))
+
+
+corrplot(time_cor_matrix, method = "circle", type = "upper", 
+         tl.col = "black", tl.srt = 45)
+
+# Model comparison data
+covstruct <- data.frame(
+  Model = c("VC", "UN", "CS", "AR(1)", "ARH(1)", "ANTE(1)", "TOEP"),
+  AIC = c(-12.25, -12.22, -11.6, -12.86, -12.56, -8.57, -7.34),
+  AICC = c(-12.09, -3.58, -11.29, -12.55, -11.01, -5.39, -6.19),
+  BIC = c(-13.03, -18.47, -12.77, -14.03, -15.30, -12.48, -9.68)
+)
+
+knitr::kable(
+  covstruct,
+  format = "markdown",
+  align = "c"
+)
 ```
 
 \newpage
