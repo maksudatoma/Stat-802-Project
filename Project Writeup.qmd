@@ -207,8 +207,14 @@ ggplot(data, aes(sample = Response)) +
 
 ## Exploring the Data
 
-Now we will graphically look at how the different variables of the model impact the response variable.  @fig-explore-1 shows two interaction plots with one being for samples cut to 1/4-inches and the other for 1/8-inch samples.  Each one shows the relationship between the two inoculation methods over the five weeks for the respective thickness.  At the 1/4-inch level, the dry and wet methods start at a similar level but then change over time.  The dry method appears to stay a lower level for the first few weeks, but then rise sharply.  The opposite trend occurs for the wet method.  At the 1/8-inch level, the two methods are similar until the fifth week when the measurement of the wet method decreases and the dry method increases.  In both plots we seem to have interaction among the the variables, so that will need to be investigated further.
-
+Now we will graphically look at how the different variables of the model impact the response variable.
+@fig-explore-1 shows two interaction plots with one being for samples cut to 1/4-inches and the other for 1/8-inch samples.
+Each one shows the relationship between the two inoculation methods over the five weeks for the respective thickness.
+At the 1/4-inch level, the dry and wet methods start at a similar level but then change over time.
+The dry method appears to stay a lower level for the first few weeks, but then rise sharply.
+The opposite trend occurs for the wet method.
+At the 1/8-inch level, the two methods are similar until the fifth week when the measurement of the wet method decreases and the dry method increases.
+In both plots we seem to have interaction among the the variables, so that will need to be investigated further.
 
 ```{r,  fig.pos="H"}
 #| label: fig-explore-1
@@ -235,6 +241,72 @@ ggplot(data, aes(x = Week, y = Response,
     text = element_text(size = 14),
     legend.position = "bottom"
   )
+
+```
+
+**Box Plot** **I THINK WE CAN ADD THIS** 
+The boxplot illustrates the response variable across five weeks, separated by inoculation method (Dry, Wet) and thickness (1/4-inch, 1/8-inch).
+Differences in medians between Dry and Wet methods suggest potential interactions, particularly in certain weeks.
+The response patterns differ between 1/4-inch and 1/8-inch thickness, with 1/4-inch showing more consistency over time.
+Variability in responses increases in certain weeks, such as Week 5 for 1/4-inch and Wet, indicating possible heterogeneity in variance.
+Overall, the plot highlights the importance of analyzing the interaction effects and temporal correlations in the repeated measures model.
+
+```{r,,fig.pos="H"}
+#| label: fig-boxplot
+#| echo: false
+#| eval: true
+#| fig-cap: "Boxplot of response variable over time, controlling for thickness and inoculation method."
+
+
+##2. Boxplot
+
+ggplot(data, aes(x = factor(Week), y = Response, fill = Inoculation_Method)) +
+  geom_boxplot() +
+  facet_wrap(~ Thickness) +
+  labs(
+    x = "Week",
+    y = "Response",
+    fill = "Inoculation Method"
+  ) +
+  theme_minimal() +
+  theme(
+    text = element_text(size = 14),
+    legend.position = "bottom"
+  )
+
+
+```
+
+**WHAT DO YOU THINK ABOUT THIS PLOT?** Based on lsmean.
+
+If you want we can add two other interaction plots as well?
+
+The interaction plot suggests that Thickness has a differential effect on the response over time, with 1/8-inch showing greater variability and sharper trends compared to 1/4-inch.
+This interaction warrants further statistical confirmation through hypothesis testing.
+
+```{r}
+# Load necessary library
+library(ggplot2)
+
+# Create the data frame
+data <- data.frame(
+  Thickness = rep(c("1/4-inch", "1/8-inch"), each = 5),
+  Week = rep(1:5, times = 2),
+  Estimate = c(4.2195, 4.3300, 4.3801, 4.3315, 4.3721, 
+               4.7491, 4.8049, 4.5628, 4.3238, 4.5135),
+  SE = rep(0.1013, 10) # Standard Error
+)
+
+# Interaction plot with error bars
+ggplot(data, aes(x = Week, y = Estimate, color = Thickness, group = Thickness)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  geom_errorbar(aes(ymin = Estimate - SE, ymax = Estimate + SE), width = 0.2) +
+  labs(title = "Interaction Plot: Thickness vs Week",
+       x = "Week",
+       y = "Least Squares Means (Estimate)") +
+  theme_minimal() +
+  theme(legend.title = element_blank())
 
 ```
 
@@ -333,25 +405,51 @@ Since the assumptions are holding, we can proceed with the linear mixed model.
 
 ## Model Output
 
-We can now look at some of the output from fitting the linear mixed model in SAS. @fig-fit shows three tables from this output. The first is the *Fit Statistics* table, which is where the metrics used in @fig-model-comparison-table come from. These metrics indicate the fit of the model, which seems fine to us.
-The second table is the *Covariance Parameter Estimates* table and it shows how much of the variance in the model is explained by the random terms.  We can see all three values are fairly small, with the estimated variance for the AR(1) autocorrelation structure actually being negative (-0.2140).  This negative value shows a weak negative correlation between adjacent time points.
+We can now look at some of the output from fitting the linear mixed model in SAS.
+@fig-fit shows three tables from this output.
+The first is the *Fit Statistics* table, which is where the metrics used in @fig-model-comparison-table come from.
+These metrics indicate the fit of the model, which seems fine to us.
+The second table is the *Covariance Parameter Estimates* table and it shows how much of the variance in the model is explained by the random terms.
+We can see all three values are fairly small, with the estimated variance for the AR(1) autocorrelation structure actually being negative (-0.2140).
+This negative value shows a weak negative correlation between adjacent time points.
 The small values for the estimated residual variance (0.02664) is good news as it means there is minimal unexplained variability in this model.
 
 \newpage
+
 ![*Fit Statistics*, *Covariance Parameter Estimates*, and *Type III Tests of Fixed Effects* tables.](ar-1.png){#fig-fit width="3in"}
 
-The last table in @fig-fit is the *Type III Tests of Fixed Effects* table.  This allows us to see if the fixed effects are significant by looking at the p-values reported in the `Pr > F` column.  We must first consider the significance of the interaction effects and only look at main effects if the interaction effects are insignificant.  While the three-way interaction between the inoculation method, thickness, and week is not significant, all three two-way interactions between these variables are highly significant (p\<0.0001).  Therefore, we need to consider simple effects. Overall we can say each respective two-way interaction does have an impact on the data.  This validates what we saw in @fig-explore-1.
+The last table in @fig-fit is the *Type III Tests of Fixed Effects* table.
+This allows us to see if the fixed effects are significant by looking at the p-values reported in the `Pr > F` column.
+We must first consider the significance of the interaction effects and only look at main effects if the interaction effects are insignificant.
+While the three-way interaction between the inoculation method, thickness, and week is not significant, all three two-way interactions between these variables are highly significant (p\<0.0001).
+Therefore, we need to consider simple effects.
+Overall we can say each respective two-way interaction does have an impact on the data.
+This validates what we saw in @fig-explore-1.
 
-Since we found three significant two-way interactions we will need to look at the *Least Squares Means* output for each interaction.  The first one we are looking at is for the interaction between inoculation method and thickness.  This can be seen in @fig-iXt.  These tables allow us to see how the variables interact at each level.  
+While both the inoculation method and thickness are significant, this is just the main effects for the model.
+Therefore, we need to focus on the interaction terms.
+
+All interaction contrasts are significant, with Dry vs. Wet at 1/8 inches and 1/4 vs. 1/8 inches for Dry being highly significant.
+This highlights that the bacteria seems to grow higher when dry inoculated at the two thicknesses levels (especially on 1/8 inches)
+
+![Contrasts table.](ar-2.png){#fig-con width="3.5in"}
+
+Since we found three significant two-way interactions we will need to look at the *Least Squares Means* output for each interaction.
+The first one we are looking at is for the interaction between inoculation method and thickness.
+This can be seen in @fig-iXt.
+These tables allow us to see how the variables interact at each level.
 
 ![*Least Squares Means* output for inoculation method and thickness interaction.](ar-5.png){#fig-iXt width="80%"}
 
-We can see from the *Least Squares Means* table that all the combinations are significant, but we want to look closer at the differences in the second table.  Once again all the differences between each possible combination of inoculation method and thickness are significant since the largest p-value is 0.0209.  We can see the largest difference is between the combinations of 1/4-inch with dry inoculation and 1/8-inch with dry inoculation.  The negative difference implies the 1/8-inch pieces have significantly lower values, which is what we want.  The smallest difference was involved the two thicknesses with wet inoculation.  This indicates both preform in a similar way with the 1/8-inch pieces performing slightly but significantly better.
+We can see from the *Least Squares Means* table that all the combinations are significant, but we want to look closer at the differences in the second table.
+Once again all the differences between each possible combination of inoculation method and thickness are significant since the largest p-value is 0.0209.
+We can see the largest difference is between the combinations of 1/4-inch with dry inoculation and 1/8-inch with dry inoculation.
+The negative difference implies the 1/8-inch pieces have significantly lower values, which is what we want.
+The smallest difference was involved the two thicknesses with wet inoculation.
+This indicates both preform in a similar way with the 1/8-inch pieces performing slightly but significantly better.
 
-# ------------------------
-# WHERE I STOPPED
-## Are there any tables we don't need
 
+## Are there any tables we don't need- I think we need all those to explain properly. As we already showed all those in presentation, we can add in report
 
 ## LS mean comparison for interaction
 
@@ -372,35 +470,72 @@ When comparing Dry and Wet methods, Wet generally performs slightly better, espe
 However, the differences between Dry and Wet are more noticeable at 1/8-inch thickness, highlighting that the combination of method and thickness plays a key role.
 These findings suggest that to optimize results, we need to carefully consider the interaction between the method used and the thickness of the material.
 
-**Inoculation Method \times Week**
+**Inoculation Method** \times Week
 
-The interaction between inoculation method and time (Week) is evident, with Dry inoculation showing an increase in Week 5 and Wet inoculation peaking earlier. This indicates that the timing of bacterial growth depends on the inoculation method used.
+The interaction between inoculation method and time (Week) is evident, with Dry inoculation showing an increase in Week 5 and Wet inoculation peaking earlier.
+This indicates that the timing of bacterial growth depends on the inoculation method used.
 
 ![fig6](ar-6.png){#fig-iXW width="70%"}
 
-The interaction between Inoculation_Method and Week is significant, with differences in bacterial growth patterns being particularly pronounced for Week 5, where the Dry method shows significantly higher responses than Wet. This suggests the impact of inoculation method depends on the week of measurement.
+The interaction between Inoculation_Method and Week is significant, with differences in bacterial growth patterns being particularly pronounced for Week 5, where the Dry method shows significantly higher responses than Wet.
+This suggests the impact of inoculation method depends on the week of measurement.
 
 ![fig9](ar-7.png){#fig-iXw-slice}
 
-The results show that bacterial growth varies significantly across weeks for both thicknesses, with the effect being stronger for 1/8-inch thickness (F=17.53,p<0.0001) than for 1/4-inch (F=3.19,p=0.0179). Thickness differences are most pronounced in Weeks 1 and 2, where 1/8-inch slices show significantly higher bacterial growth compared to 1/4-inch (p<0.0001). By Week 5, the effect of thickness is no longer significant (F=0.32,p=0.5723), suggesting bacterial growth levels stabilize between the two thicknesses.
+The results show that bacterial growth varies significantly across weeks for both thicknesses, with the effect being stronger for 1/8-inch thickness (F=17.53,p\<0.0001) than for 1/4-inch (F=3.19,p=0.0179).
+Thickness differences are most pronounced in Weeks 1 and 2, where 1/8-inch slices show significantly higher bacterial growth compared to 1/4-inch (p\<0.0001).
+By Week 5, the effect of thickness is no longer significant (F=0.32,p=0.5723), suggesting bacterial growth levels stabilize between the two thicknesses.
 
-1/8-inch thickness facilitates higher bacterial growth compared to 1/4-inch across all weeks, with Week 2 showing the highest LSMean for 1/8-inch. This highlights that the combination of thinner slices and Week 2 conditions create the most favorable environment for bacterial growth.
+1/8-inch thickness facilitates higher bacterial growth compared to 1/4-inch across all weeks, with Week 2 showing the highest LSMean for 1/8-inch.
+This highlights that the combination of thinner slices and Week 2 conditions create the most favorable environment for bacterial growth.
 
 ![fig8](ar-8.png){#fig-tXW}
 
 The 1/8-inch thickness shows greater variability in bacterial growth across weeks, highlighting its susceptibility.
-Thickness differences are most significant in Weeks 1 and 2, where thinner slices (1/8-inch) show much higher bacterial growth than thicker slices (1/4-inch). By Week 5, the effect of thickness diminishes, suggesting bacterial growth stabilizes between the two thicknesses.
-
-
+Thickness differences are most significant in Weeks 1 and 2, where thinner slices (1/8-inch) show much higher bacterial growth than thicker slices (1/4-inch).
+By Week 5, the effect of thickness diminishes, suggesting bacterial growth stabilizes between the two thicknesses.
 
 ![fig9](ar-9.png){#fig-tXW-slice}
 
 \newpage
-**I think we can cut the contrast table.  Or did I misunderstand what she said during the presentation?**
 
-![Contrasts table.](ar-2.png){#fig-con width="3.5in"}
+# Recommendation
+
+Use thicker slices (1/4-inch) to minimize bacterial growth and ensure uniform thickness during processing. 
+
+If both slices are used, prioritize the wet inoculation method over dry, as it consistently results in lower bacterial growth
+
+To reduce bacterial growth, focus on critical weeks: prioritize monitoring Week 2 and Week 5 for inoculation methods, as these show significant differences between the dry and wet methods, and Week 1 and Week 2 for thickness, as 1/8-inch slices are more prone to bacterial growth. 
 
 # Conclusion
+
+**WE NEED TO WRITE SOMETHING LIKE THIS**
+
+In this report, an attempt is made to exhibit the protocols that need to be followed to
+conduct an experimental study. The first step is getting to know the research idea of the
+clients/domain experts. A consultant should collect as much information as possible
+regarding the research in this meeting. This may require understanding how the
+experiment will be conducted in the field and drawing out the layout of the experiment.
+An appropriate study design is then suggested. Then, once the client provides the required
+estimates of the mean components and variance components either from a pilot study or
+past literatures, a power analysis is to be performed. Once, desired power is achieved
+then the experiment should be conducted. For this study, power analysis suggested two
+blocks to be enough to detect the difference in the highest level of interaction. Data was
+simulated based on the given estimates of mean and variances and number of blocks and
+was analyzed.
+Given full availability of resources of nozzle and herbicides, for W1, N1H2 resulted in
+least biomass. Similarly, for W2, the desired combination is N1H5, and lastly for W3, it
+is N2H1 combination. However, in presence of subset of herbicides, three-way
+interaction between weed, nozzle and herbicides makes the choice difficult. For instance,
+for W1, H1 should be avoided for any combination of N1 and N2 as it results in the
+highest amount of dry weed biomass suggesting it is not strong enough to prevent weed
+growth. Similarly, N2 would be preferred over N1 if H1 or H2 is sprayed on W2. Hence,
+in the presence of three-way interaction, it is difficult to say which combination is the
+most desired one and depends on the variety of weed species and the resources available
+
+# Acknowledge
+
+We want to thank Dr. Reka Howard for helping us with the project. We're also grateful to the people of STAT 802 group for sharing their study ideas and letting us work with them on a project in their area of expertise.
 
 # Future Work
 
