@@ -1,0 +1,862 @@
+---
+title: "802 Project Summary"
+authors: 
+  Maksuda Aktar Toma,
+  Jo Charbonneau,
+  Ryan Lalicker
+date: today
+date-format: long
+execute: 
+  echo: false
+  warning: false
+format:
+  pdf: 
+    fig-align: center
+    fig-width: 6
+    fig-height: 4
+bibliography: references.bib
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+```{r,  fig.pos="H"}
+#| label: data-setup
+#| echo: false
+#| eval: true
+
+library(knitr)
+library(dplyr)
+library(ggplot2)
+library(naniar)
+library(reshape2)
+library(GGally)
+library(janitor)
+library(emmeans)
+library(MASS)
+library(multcomp)
+library(lme4)
+library(nnet)
+library(tidyr)
+library(knitr)
+library(kableExtra)
+library(corrplot)
+
+data <- read.csv("rptm_simulation.csv")
+
+
+```
+
+# Introduction
+
+This paper summarizes the consulting that was done for our assigned STAT 802 group.
+For more information on the experiment, the data, or any other files used in this paper see our [Github page](https://github.com/maksudatoma/Stat-802-Project) which can be found at \<https://github.com/maksudatoma/Stat-802-Project\>.
+The coding languages used in the paper are R and SAS.
+The corresponding code can be found in *Appendix A - R Code* and *Appendix B - SAS Code and Additional Output* respectively.
+
+# Initial Meetings
+
+The first meeting with our clients was on September 13th.
+We discussed their project and what kind of data they were going to be looking at.
+They detailed to us their project, which is looking at the levels of salmonella in beef jerky at different inoculations and thicknesses.
+Prior to the meeting they sent us what their variables would be, which gave us a good idea of what might be the best experimental design.
+The group informed us they were avoiding a completely randomized design (CRD) at the request of their professor.
+With that in mind, we suggested other possible models.
+
+Later, after receiving feedback from Dr. Howard and several PhD students within the statistics department, we suggested adding a time component to the experiment and creating multiple batches to replicate each treatment combination.
+This lead to us suggesting a mixed model for the analysis.
+
+In both the initial meeting and the follow-up session the clients were more than happy to implement our suggestions.
+In the end the experiment involved two thickness levels (one-fourth and one-eighth of an inch), two inoculation methods (dry and wet), and five evenly spaced time points where measurements were taken (weeks 1-5) creating twenty entries per batch.
+The exact number of batches would not be known until after the power analysis, found in the *Power Analysis* section.
+We provided the client an example dataset we created to give them a better idea of what the end product may look like.  This dataset had five batches.
+
+# Study Objectives and Proposed Model
+
+The clients were most interested in the effect of the thickness levels, the inoculation method, and their interaction had on the salmonella levels.
+In the final model we included the week effect and subsequent interactions as well.
+These variables are the fixed effects in the proposed mixed model.
+
+The other variable included in the experiment is the batch number.
+This is therefore treated as a random variable.
+As mentioned above, the exact number of batches needed was unknown prior to the power analysis, but five was used as a starting value.
+
+Overall the study employs a 2×2 factorial design with two main factors: Inoculation Method (Dry, Wet) and Thickness (1/4-inch, 1/8-inch).
+Repeated measurements are taken over five equally spaced time points (Weeks 1 to 5), allowing the analysis of both main effects, their interaction, and changes over time.
+
+The model can be written in the form
+
+$$
+Y_{ijkl} = \mu + \alpha_i + \beta_j + \tau_k + (\alpha \beta)_{ij}+(\alpha \tau)_{ik}+(\beta \tau)_{jk}+(\alpha \beta \tau)_{ijk} + u_l + e_{ijkl}
+$$
+
+Here, $Y_{ijkl}$ is the salmonella level and $\mu$ is the overall mean.
+The fixed effects are represented by $\alpha_i$ for the effect of the $i$th inoculation method, $\beta_j$ for the effect of the $j$th thickness level, and $\tau_k$ for the effect of the $k$th week.
+The interaction effect of the $i$th inoculation method and the $j$th thickness level is represented by $(\alpha \beta)_{ij}$, with the other two-way interactions following this form.
+The three-way interaction between all fixed effects is represented as $(\alpha \beta \tau)_{ijk}$.
+The random effect for batches is represented by $u_l$, which we assume are distributed as $u_l$\~$N(0,\sigma_u^2)$.
+Lastly, the residuals are represented by $e_{ijkl}$, which we assume can be distributed as $e_{ijkl}$\~$N(0,\sigma^2)$.
+
+# Power Analysis
+
+Before power analysis, We reached out to the client later on in the process to determine what contrasts they were most interested in testing.
+They expressed they wanted to see the difference between the two levels of the inoculation method, the two levels of the thickness, and the orthogonal contrasts these variable.
+This resulted in six contrasts being tested.
+
+To determine the necessary number of batches needed to increase the likelihood of detecting a true treatment effect, we performed a power analysis.
+To do this, probable treatment mean estimates across all five weeks and variance estimates were needed.
+The clients provided these metrics from @trtmeans.
+We then used these metrics to create a dataset with five batches where the response variable was identical across the batches.
+This dataset was then evaluated to determine the power.
+The results of the power analysis perfomed in SAS are shown below.
+
+![Results of power analysis.](PowerOutput.png)
+
+The first six rows of the table correspond to the contrasts the clients were interested in testing, while the bottom seven rows are measuring the fixed effects of the model.
+Many of the terms have more than 80% power.
+Specifically the fixed effects were all high enough for both the clients and ourselves to feel comfortable using five batches.
+Two of the orthogonal contrasts, `Dry vs Wet at 1/4 Inches` and `1/4 vs 1/8 inches for Wet inoculation` did have lower power scores, but after talking with both the clients and Dr. Howard about them, we felt comfortable to proceed.
+
+# Simulating Data
+
+After finding the necessary number of batches, which was five, we proceeded with simulating the data.
+The estimated treatment means and variances provided by the client were used in the simulation as well.
+We then reviewed the simulated dataset for major issues, such as negative response values, and reran the power analysis on the new data set to ensure everything was working properly.
+After finding no problems with the dataset, we sent it to the clients.
+Note, the simulation was performed in SAS.
+
+# Data Analysis
+
+## Summary Statistics
+
+As part of the project, we analyzed the simulated dataset.
+Before fitting out model to the dataset, we first wanted to explore some of the variables.
+@fig-sum-stats shows the mean values and standard deviations for each treatment combination.
+We can see the changes in mean values are small, so further exploration and analysis are needed.
+
+```{r,,fig.pos="H"}
+#| label: fig-sum-stats
+#| echo: false
+#| eval: true
+#| fig-cap: ""
+
+# Summary of response variable across factors and weeks
+response_summary <- data %>%
+  group_by(Inoculation_Method, Thickness, Week) %>%
+  summarise(
+    Mean_Response = mean(Response, na.rm = TRUE),
+    SD_Response = sd(Response, na.rm = TRUE),
+    Count = n()
+  )
+
+# Create a summary table using kable
+knitr::kable(
+  response_summary,
+  caption = "Summary of response rariable across factors and weeks",
+  digits = 3, # Round numbers to 3 decimal places
+  col.names = c("Inoculation Method", "Thickness", "Week", "Mean Response", "SD Response", "Count"),
+  format = "markdown"
+)
+
+
+```
+
+## Distribution of response variable
+
+Before continuing our investigation into the relationships among the treatment variables, we want to look into the response variable (salmonella levels).
+Specifically, we want to see how it is distributed.
+@fig-hist shows a histogram and Q-Q plot of the response variable in the left and right plots respectively.
+While the histogram shows a slight potential skew, this is not enough for us say the distribution is non-normal.
+Furthermore, the Q-Q plot indicates the response variable follows a relatively normal distribution.
+
+```{r,,fig.pos="H"}
+#| label: fig-hist
+#| echo: false
+#| eval: true
+#| fig-cap: "Histogram and Q-Q plot of the response variable."
+#| layout-ncol: 2
+#| fig-subcap: 
+#|  - "Histogram"
+#|  - "Q-Q plot"
+#| fig-width: 6
+#| fig-height: 4
+
+
+# Basic histogram
+ggplot(data, aes(x = Response)) +
+  geom_histogram(binwidth = 0.1, color = "black", fill = "skyblue") +
+  labs(
+    x = "Response",
+    y = "Frequency"
+  ) +
+  theme_minimal() +
+  theme(text = element_text(size = 14))
+
+ggplot(data, aes(sample = Response)) +
+  stat_qq(color = "black") +
+  stat_qq_line(color = "red", linetype = "dashed") +
+  labs(
+    x = "Theoretical Quantiles",
+    y = "Sample Quantiles"
+  ) +
+  theme_minimal() +
+  theme(text = element_text(size = 14))
+
+```
+
+## Exploring the Data
+
+Now we will graphically look at how the different variables of the model impact the response variable.
+@fig-explore-1 shows two interaction plots with one being for samples cut to 1/4-inches and the other for 1/8-inch samples.
+Each one shows the relationship between the two inoculation methods over the five weeks for the respective thickness.
+At the 1/4-inch level, the dry and wet methods start at a similar level but then change over time.
+The dry method appears to stay a lower level for the first few weeks, but then rise sharply.
+The opposite trend occurs for the wet method.
+At the 1/8-inch level, the two methods are similar until the fifth week when the measurement of the wet method decreases and the dry method increases.
+In both plots we seem to have interaction among the the variables, so that will need to be investigated further.
+
+```{r,  fig.pos="H"}
+#| label: fig-explore-1
+#| echo: false
+#| eval: true
+#| fig-cap: "Interaction plots of inoculation method and time for each thickness level."
+#| fig-width: 6
+#| fig-height: 4
+
+
+ggplot(data, aes(x = Week, y = Response, 
+                 color = Inoculation_Method, 
+                 group = interaction(Inoculation_Method, Thickness))) +
+  geom_line(stat = "summary", fun = mean, size = 1) +  
+  geom_point(stat = "summary", fun = mean, size = 2) + 
+  facet_wrap(~ Thickness) +                           
+  labs(
+    x = "Week",
+    y = "Mean Response",
+    color = "Inoculation Method"
+  ) +
+  theme_minimal() +
+  theme(
+    text = element_text(size = 14),
+    legend.position = "bottom"
+  )
+
+```
+
+Another element to consider is correlation over time.
+Since this is a repeated measures experiment we need to account for this correlation by selecting a type of covariance structure.
+There are several types of structures such as variance components (VC), unstructured (UN), compound symmetry (CS) and heterogeneous compound symmetry (CSH), $p$-order auto-regressive (AR($p$)) and heterogeneous auto-regressive (ARH($p$)), $p$-order ante-dependence (ANTE($p$)), and Toeplitz (TOEP) among others.
+For more information on these see @purdue and @usdacov.
+The AR($p$) structure fits data that is ordered through time an equally spaced.
+For that reason, our initial plan was to use this as the covariance structure with $p=1$.
+
+To see if this first-order auto-regressive structure might fit the data, let's consider the table and plot in @fig-corr.
+The correlation matrix (left) and plot (right) show the relationships between repeated measurements over weeks one to five.
+Strong correlations are observed between adjacent weeks (e.g., Week 1 vs. Week 2, r=0.69, Week 2 vs. Week 3, r=0.74), indicating temporal dependency.
+Correlations weaken as the time gap increases (e.g., Week 1 vs. Week 5, r=0.29), leading us to believe orders of $p>1$ are not necessary.
+This can be seen visually in the plot which uses circle size and color to model the correlation metrics seen in the matrix.
+We can see as the gap between weeks increases, the circles become smaller and lighter.
+This pattern supports the use of models like AR($1$).
+
+```{r,,fig.pos="H"}
+#| label: fig-corr
+#| echo: false
+#| eval: true
+#| fig-cap: "Table and plots to see the correlation across time."
+#| layout-ncol: 2
+#| fig-subcap: 
+#|  - "Correlation matrix"
+#|  - "Correlation plot"
+#| fig-width: 6
+#| fig-height: 4
+
+wide_data <- pivot_wider(data, names_from = Week, values_from = Response)
+
+# Remove non-numeric columns (like ID or group factors)
+time_data <- wide_data[ , -1] # Exclude the first column (ID or grouping variable)
+time_data <- time_data[sapply(time_data, is.numeric)]
+
+# Compute the correlation matrix across time points
+time_cor_matrix <- cor(time_data, use = "pairwise.complete.obs")
+
+cor_df <- as.data.frame(time_cor_matrix)
+cor_df <- cbind(Time = rownames(cor_df), cor_df)
+
+kable(
+  cor_df,
+  digits = 2,
+  col.names = c("Time", colnames(time_cor_matrix)))
+  
+
+corrplot(time_cor_matrix, method = "circle", type = "upper", tl.col = "black", tl.srt = 45)
+
+```
+
+## Model Comparison
+
+After exploring the data we can move on to fitting the model.
+While we were confident in using the AR($1$), we chose to fit the model using other covariance structures as well so we could see how the fit compares.
+The results are shown in @fig-model-comparison-table.
+For each of the fit statistics in this table a lower score is better, even when looking at negative values.
+(@Statology).
+This means the model fit using an AR($1$) structure had the best AIC and AICC scores and a respectable BIC score.
+This verifies our choice in the AR($1$) covariance structure.
+
+```{r, fig.pos="H"}
+#| label: fig-model-comparison-table
+#| echo: false
+#| eval: true
+#| fig-cap: "Model comparison table."
+
+# Model comparison data
+covstruct <- data.frame(
+  Model = c("VC", "UN", "CS", "AR(1)", "ARH(1)", "ANTE(1)", "TOEP"),
+  AIC = c(-12.25, -12.22, -11.6, -12.86, -12.56, -8.57, -7.34),
+  AICC = c(-12.09, -3.58, -11.29, -12.55, -11.01, -5.39, -6.19),
+  BIC = c(-13.03, -18.47, -12.77, -14.03, -15.30, -12.48, -9.68)
+)
+
+knitr::kable(
+  covstruct,
+  format = "markdown",
+  align = "c"
+)
+
+```
+
+After verifying the fit of the AR($1$) covariance structure for the repeated measures, we needed to see if the assumptions for a linear mixed model are violated or not.
+These include the residuals being normally distributed and homogeneous.
+The plots in @fig-res allow us to evaluate these assumptions.
+To graphically test normality, we can look at both the histogram (top right) and the Q-Q plot (bottom left).
+These both appear approximately normal, indicating the assumption holds.
+The boxplot (bottom right) can also show normality as well as potential outliers.
+It appears there is one outlier, but the normality assumption still holds.
+The residual plot (top left) allows us to check if the homogeneous assumption holds, and it appears to since the points seem somewhat randomly distributed with no clear pattern.
+Since the assumptions are holding, we can proceed with the linear mixed model.
+
+![Residual plots for checking assumptions.](ar-4.png){#fig-res width="4in"}
+
+## Model Output
+
+We can now look at some of the output from fitting the linear mixed model in SAS.
+@fig-fit shows three tables from this output.
+The first is the *Fit Statistics* table, which is where the metrics used in @fig-model-comparison-table come from.
+These metrics indicate the fit of the model, which seems fine to us.
+The second table is the *Covariance Parameter Estimates* table and it shows how much of the variance in the model is explained by the random terms.
+We can see all three values are fairly small, with the estimated variance for the AR(1) autocorrelation structure actually being negative (-0.2140).
+This negative value shows a weak negative correlation between adjacent time points.
+The small values for the estimated residual variance (0.02664) is good news as it means there is minimal unexplained variability in this model.
+
+\newpage
+
+![*Fit Statistics*, *Covariance Parameter Estimates*, and *Type III Tests of Fixed Effects* tables.](ar-1.png){#fig-fit width="3in"}
+
+The last table in @fig-fit is the *Type III Tests of Fixed Effects* table.
+This allows us to see if the fixed effects are significant by looking at the p-values reported in the `Pr > F` column.
+We must first consider the significance of the interaction effects and only look at main effects if the interaction effects are insignificant.
+While the three-way interaction between the inoculation method, thickness, and week is not significant, all three two-way interactions between these variables are highly significant (p\<0.0001).
+Therefore, we need to consider simple effects.
+Overall we can say each respective two-way interaction does have an impact on the data.
+This validates what we saw in @fig-explore-1.
+
+@fig-con shows the output for the contrasts we are evaluating at the client's request.  While both the inoculation method and thickness are significant, this is just repeating the main effects for each variable that we saw in @fig-fit.  Therefore, we need to focus on the interaction terms.  All interaction contrasts are significant, with `Dry vs. Wet at 1/8 inches` and `1/4 vs. 1/8 inches for Dry inoculation` being highly significant.  This requires further investigation.
+
+![Contrasts table.](ar-2.png){#fig-con width="3.5in"}
+
+Since we found three significant two-way interactions we will need to look at the *Least Squares Means* output for each interaction.
+The first one we are looking at is for the interaction between inoculation method and thickness.
+This can be seen in @fig-iXt.
+These tables allow us to see how the variables interact at each level.
+
+![*Least Squares Means* output for inoculation method and thickness interaction.](ar-5.png){#fig-iXt width="88%"}
+
+We can see from the *Least Squares Means* table that all the combinations are significant, but we want to look closer at the differences in the second table.
+Once again all the differences between each possible combination of inoculation method and thickness are significant since the largest p-value is 0.0209.
+We can see the largest difference is between the combinations of 1/4-inch with dry inoculation and 1/8-inch with dry inoculation.
+The negative difference implies the 1/8-inch pieces have significantly lower values, which is what we want.
+The smallest difference was involved the two thicknesses with wet inoculation.
+This indicates both perform in a similar way with the 1/8-inch pieces performing slightly but significantly better.
+
+![*Least Squares Means* table for inoculation method and week interaction.](ar-6.png){#fig-iXW width="70%"}
+
+Moving on to the inoculation method and week interaction, @fig-iXW shows us that the estimated response variables differ for the treatment combinations.  The largest estimate is the dry samples in week 5 (4.7607), while that same week is the lowest estimate for the wet samples (4.2249). Additionally week 2 has the highest estimate for the wet samples.  Similarly, @fig-iXw-slice shows that the interaction between the two variables is most significant at week 5 (p-value\<0.0001), followed by week 2 (p-value=0.0086).  This suggests the impact of the inoculation method depends on the week of measurement.  
+
+![*Test of Effect Slices* table for the two-way interaction with respect to the inoculation method and the week respectively.](ar-7.png){#fig-iXw-slice}
+
+@fig-Appendix-C-1, which shows the differences among the different combinations of inoculation methods and weeks, can be found in *Appendix B - SAS Code and Additional Output*.  Note that the second table in @fig-iXw-slice comes from the comparison of the dry versus wet method for a given week found in @fig-Appendix-C-1.  For the comparisons involving different weeks, most of the significant differences involve cases where there are two or more weeks between the treatment combinations, but some of the largest significant estimated differences occurred in weeks 4 and 5.
+
+The last of the three two-way interactions is for the thickness and the weeks.  @fig-tXW shows that the largest estimated response variable is 1/8-inch samples in week 2 (4.8049) followed by the same thickness the week prior (4.7491).  Meanwhile, the 1/4-inch samples over the five weeks account for five of the six lowest estimates.  This indicates the 1/4-inch samples are generally better at slowing bacterial growth over time.  They are also more consistent than the 1/8-inch pieces. 
+
+![*Least Squares Means* table for thickness and week interaction.](ar-8.png){#fig-tXW}
+
+Adding to this, @fig-Appendix-C-2 in *Appendix B - SAS Code and Additional Output* shows the differences among the various combinations of the thicknesses and the weeks.  The differences involving combinations that hold one of the two variables constant (eg. 1/4-inch at week 1 versus 1/8-inch at week 1 where the week is constant) are shown in @fig-tXW.  The second table in @fig-tXW shows us the interaction of these variables is most significant in the first two weeks (p-value\<0.0001) followed by the third week (p-value=0.0069). When looking at these same cases in @fig-Appendix-C-2 we can see negative estimates, implying the 1/4-inch thickness returns a lower response value for the first three weeks.  Weeks 4 and 5 are not significant though.  Additionally, in the first table we can see the interaction at the 1/8-inch level is highly significant (p-value\<0.0001), while the 1/4-inch level has a higher p-value (0.0179) but is still significant.  
+
+![*Test of Effect Slices* table for the two-way interaction with respect to the thickness and the week respectively.](ar-9.png){#fig-tXW-slice}
+
+## Recommendation
+
+In terms of how the results of this experiment would affect a producer looking to sell beef jerky we need to make a key assumption.  Since they would obviously not be inoculating it with salmonella, let's assume the dry and wet inoculation methods reflect storage conditions.   With that in mind, our recommendation depends on a few factors.
+
+If a producer will have both dry and wet storage methods, we suggest prioritizing cutting the jerky to 1/4-inch.  This length was more consistent and had generally lower estimates than the 1/8-inch slices did.  On the other hand, if a producer wants to use both thicknesses we recommend more wet storage conditions as the wet inoculation method saw lower estimates of bacterial growth over time.  Of course, this is simulated data so these recommendations are not meant for real-world application.
+
+# Conclusion
+
+This report highlights the work done in the consultation of our STAT 802 clients.  We first met with our group to learn more about the experiment they wished to perform.  After consulting with others we were able to provide recommendations for the framework of the experiment, including a model.  By completing a power analysis using data provided by the client we were able to verify the necessary requirements for the size of the experiment in terms.  Then we carried out a simulation to create a dataset that mimics the results of a real experiment.  We were then able to explore and analyze the data using R and SAS.
+
+# Acknowledge
+
+We want to thank Dr. Reka Howard, Malith Premarathna, and other members of the SC3L staff for helping us with the project. We're also grateful to the people of STAT 802 group for sharing their study ideas and letting us work with them on a project in their area of expertise.
+
+
+\newpage
+
+# References
+
+::: {#refs}
+:::
+
+\newpage
+
+# Appendix A - R Code
+
+```{r,  fig.pos="H"}
+#| label: appendix A
+#| echo: true
+#| eval: false
+library(knitr)
+library(dplyr)
+library(ggplot2)
+library(naniar)
+library(reshape2)
+library(GGally)
+library(janitor)
+library(emmeans)
+library(MASS)
+library(multcomp)
+library(lme4)
+library(nnet)
+library(tidyr)
+library(knitr)
+library(kableExtra)
+library(corrplot)
+
+data <- read.csv("rptm_simulation.csv")
+
+response_summary <- data %>%
+  group_by(Inoculation_Method, Thickness, Week) %>%
+  summarise(
+    Mean_Response = mean(Response, na.rm = TRUE),
+    SD_Response = sd(Response, na.rm = TRUE),
+    Count = n()
+  )
+
+knitr::kable(
+  response_summary,
+  caption = "Summary of response variable across factors and weeks",
+  digits = 3, 
+  col.names = c("Inoculation Method", "Thickness", "Week", "Mean Response", 
+                "SD Response", "Count"),
+  format = "markdown"
+)
+
+ggplot(data, aes(x = Response)) +
+  geom_histogram(binwidth = 0.1, color = "black", fill = "skyblue") +
+  labs(
+    x = "Response",
+    y = "Frequency"
+  ) +
+  theme_minimal() +
+  theme(text = element_text(size = 14))
+
+ggplot(data, aes(sample = Response)) +
+  stat_qq(color = "black") +
+  stat_qq_line(color = "red", linetype = "dashed") +
+  labs(
+    x = "Theoretical Quantiles",
+    y = "Sample Quantiles"
+  ) +
+  theme_minimal() +
+  theme(text = element_text(size = 14))
+
+ggplot(data, aes(x = Week, y = Response, 
+                 color = Inoculation_Method, 
+                 group = interaction(Inoculation_Method, Thickness))) +
+  geom_line(stat = "summary", fun = mean, size = 1) +  
+  geom_point(stat = "summary", fun = mean, size = 2) + 
+  facet_wrap(~ Thickness) +                           
+  labs(
+    x = "Week",
+    y = "Mean Response",
+    color = "Inoculation Method"
+  ) +
+  theme_minimal() +
+  theme(
+    text = element_text(size = 14),
+    legend.position = "bottom"
+  )
+
+wide_data <- pivot_wider(data, names_from = Week, values_from = Response)
+
+time_data <- wide_data[ , -1] 
+time_data <- time_data[sapply(time_data, is.numeric)]
+
+time_cor_matrix <- cor(time_data, use = "pairwise.complete.obs")
+
+cor_df <- as.data.frame(time_cor_matrix)
+cor_df <- cbind(Time = rownames(cor_df), cor_df)
+
+kable(
+  cor_df,
+  digits = 2,
+  col.names = c("Time", colnames(time_cor_matrix)))
+
+
+corrplot(time_cor_matrix, method = "circle", type = "upper", 
+         tl.col = "black", tl.srt = 45)
+
+# Model comparison data
+covstruct <- data.frame(
+  Model = c("VC", "UN", "CS", "AR(1)", "ARH(1)", "ANTE(1)", "TOEP"),
+  AIC = c(-12.25, -12.22, -11.6, -12.86, -12.56, -8.57, -7.34),
+  AICC = c(-12.09, -3.58, -11.29, -12.55, -11.01, -5.39, -6.19),
+  BIC = c(-13.03, -18.47, -12.77, -14.03, -15.30, -12.48, -9.68)
+)
+
+knitr::kable(
+  covstruct,
+  format = "markdown",
+  align = "c"
+)
+```
+
+\newpage
+
+# Appendix B - SAS Code and Additional Output
+
+### Power Analysis
+
+``` sas
+data rptm_means;
+input Inoculation_Method $ Thickness $ @@; 
+do Week=1 to 5 by 1; 
+    input mu @@; 
+    output; 
+end;
+datalines;
+Dry 1/4 4.26 4.25 4.47 4.33 4.54
+Dry 1/8 4.91 4.95 4.67 4.56 4.97
+Wet 1/4 4.21 4.57 4.65 4.49 4.38
+Wet 1/8 4.86 4.78 4.62 4.32 4.22
+;
+
+data rptm_design;
+ set rptm_means;
+ do Batches = 1 to 5; /* Creating 3 blocks (batches) */
+  output;
+ end;
+run;
+
+proc print data=rptm_design;
+run;
+
+/* Creating Model */
+
+proc glimmix data=rptm_design;
+    class Batches Inoculation_Method Thickness Week;
+    model mu = Inoculation_Method|Thickness|Week;
+    random intercept / subject=Batches;
+    random Week / subject=Batches*Inoculation_Method*Thickness type=ar(1) residual;
+    parms (.029)(0.017)(.028)/hold=1,2,3;  
+    /* Provide 3 parameters for variance components */
+    lsmeans Inoculation_Method*Thickness*Week / slicediff=Week cl;
+    /* Define main effect contrasts */
+    contrast 'Dry vs Wet' 
+        Inoculation_Method 1 -1;
+    contrast '1/4 vs 1/8 inches' 
+        Thickness 1 -1;
+
+    /* Define interaction contrasts */
+   contrast 'Dry vs Wet at 1/4 Inches' 
+        Inoculation_Method 1 -1 Inoculation_Method*Thickness 1 0 -1 0; 
+    contrast 'Dry vs Wet at 1/8 Inches' 
+        Inoculation_Method 1 -1 Inoculation_Method*Thickness 0 1 0 -1; 
+    contrast '1/4 vs 1/8 inches for Dry inoculation'
+        Thickness 1 -1 Inoculation_Method*Thickness 1 -1 0 0;
+    contrast '1/4 vs 1/8 inches for Wet inoculation'
+        Thickness 1 -1 Inoculation_Method*Thickness 0 0 1 -1;
+               
+    ods output contrasts=f_contrast tests3=f_anova;
+run;
+
+/*Power*/
+data power;
+    set f_contrast f_anova;
+    ncparm = numdf * fvalue;
+    alpha = 0.05;
+    fcrit = finv(1-alpha, numdf, dendf, 0);
+    power = 1 - probf(fcrit, numdf, dendf, ncparm);
+run;
+
+proc print data=power;
+run;
+```
+
+### Simulation
+
+``` sas
+/* Step 1: Define AR(1) Covariance Structure in PROC IML */
+proc iml;
+    n = 20;                    /* Number of subjects per treatment*/
+    mean = {0 0 0 0 0};        /* Mean for each week */
+    T = 5;                     /* Number of repeated measures (weeks) */
+    rho = 0.2;                 /* AR(1) correlation parameter */
+    sigma2 = {0.29 0.29 0.29 0.29 0.29};      /* Variance for each week */
+    
+    /* Construct AR(1) covariance matrix */
+    cov = j(T, T, 0);
+    do i = 1 to T;
+        do j = 1 to T;
+            cov[i, j] = sqrt(sigma2[i] * sigma2[j]) * rho**abs(i - j);
+        end;
+    end;
+    
+    /* Print covariance matrix */
+    print "Covariance Matrix:", cov;
+
+    /* Generate simulated data using the covariance matrix */
+    call randseed(12349);      /* Set random seed */
+    x = randnormal(n, mean, cov); /* Simulate AR(1) correlated data */
+    cname = {"t1", "t2", "t3", "t4", "t5"};
+    
+    /* Print the simulated data matrix directly */
+    print "Simulated Data Matrix (x):", x;
+    /* Print Sample mean */
+    samplemean = x[:,];
+    print samplemean n;
+
+    /* Create dataset from simulated data */
+    create inputdatacb from x[colname=cname];
+    append from x;
+close inputdatacb;
+quit;
+
+/* Step 2: Display the Simulated Data as a SAS Table */
+proc print data=inputdatacb label;
+    title "Simulated Data with AR(1) Covariance Structure";
+run;
+
+/* Step 3: Define Treatment Structure and Random Effects */
+data rptm_simulation;
+    retain Subject 0;
+    keep Inoculation_Method Thickness Week Batches Response;
+
+    array weeks[5] t1-t5;
+
+    /* Define mean values for each combination of factors and week */
+    if _n_ = 1 then do;
+        array mean_values[4,2,5] _temporary_ (
+            /* Dry, 1/4 inch */
+            4.26, 4.25, 4.47, 4.33, 4.54,
+            /* Dry, 1/8 inch */
+            4.91, 4.95, 4.67, 4.56, 4.97,
+            /* Wet, 1/4 inch */
+            4.21, 4.57, 4.65, 4.49, 4.38,
+            /* Wet, 1/8 inch */
+            4.86, 4.78, 4.62, 4.32, 4.22
+        );
+    end;
+
+    /* Simulation parameters */
+    sigma_batch = sqrt(0.029); /* Batch variance */
+    sigma_resid = sqrt(0.017); /* Residual variance */
+
+    /* Loop through each combination of factors */
+    do Batches = 1 to 5; /* Number of batches */
+        batch_effect = rand("Normal", 0, sigma_batch); /*Random batch effect*/
+
+        do Inoculation_Method = "Dry", "Wet";
+            do Thickness = "1/4-inch", "1/8-inch";
+                Subject + 1;
+                set inputdatacb;
+
+                /* Generate response for each week with AR(1) structure */
+                do Week = 1 to 5;
+                    Mean_Value = mean_values[
+                      (Inoculation_Method="Dry")*1+(Inoculation_Method="Wet")*2,
+                      (Thickness="1/4-inch")*1 + (Thickness="1/8-inch")*2,
+                        Week
+                    ];
+                    Response = Mean_Value + batch_effect + weeks[Week];
+                    output;
+                end;
+            end;
+        end;
+    end;
+run;
+
+/* Step 4: Display the Simulated Data in a Structured Format */
+proc print data=rptm_simulation label;
+    title "Simulated Data for 2x2 Factorial Design with Repeated Measures";
+run;
+```
+
+### Analysis
+
+``` sas
+proc glimmix data=work.import plots=residualpanel;
+    class Batches Inoculation_Method Thickness Week;
+    model Response = Inoculation_Method|Thickness|Week;
+    random intercept / subject=Batches;
+    random Week / subject=Batches*Inoculation_Method*Thickness type=ar(1) residual;
+    lsmeans Inoculation_Method*Thickness / diff slicediff = week;
+    lsmeans Inoculation_Method*Week / diff slicediff = Thickness;
+    lsmeans Thickness*Week / diff slicediff = Inoculation_Method;
+    lsmeans Inoculation_Method*Thickness / slice=week;
+    lsmeans Inoculation_Method*Week / slice=Thickness;
+    lsmeans Thickness*Week / slice=Inoculation_Method;
+    
+    /* Define main effect contrasts */
+    contrast 'Dry vs Wet' 
+        Inoculation_Method 1 -1;
+    contrast '1/4 vs 1/8 inches' 
+        Thickness 1 -1;
+
+    /* Define interaction contrasts */
+   contrast 'Dry vs Wet at 1/4 Inches' 
+        Inoculation_Method 1 -1 Inoculation_Method*Thickness 1 0 -1 0; 
+    contrast 'Dry vs Wet at 1/8 Inches' 
+        Inoculation_Method 1 -1 Inoculation_Method*Thickness 0 1 0 -1; 
+    contrast '1/4 vs 1/8 inches for Dry inoculation'
+        Thickness 1 -1 Inoculation_Method*Thickness 1 -1 0 0;
+    contrast '1/4 vs 1/8 inches for Wet inoculation'
+        Thickness 1 -1 Inoculation_Method*Thickness 0 0 1 -1;
+               
+    ods output contrasts=f_contrast tests3=f_anova;
+run;
+```
+
+## Additional Output
+
+\newpage
+
+
+```{r,,fig.pos="H"}
+#| label: fig-Appendix-C-1
+#| echo: false
+#| eval: true
+#| fig-cap: "*Differences of Inoculation Method `*` Week Least Squares Means* table."
+
+
+Inoculation_Method <- c("Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", 
+                        "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", 
+                        "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Wet", "Wet", "Wet", "Wet", 
+                        "Wet", "Wet", "Wet", "Wet", "Wet", "Wet")
+Week <- c(1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 
+          5, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4)
+
+Inoculation_Method_2 <- c("Dry", "Dry", "Dry", "Dry", "Wet", "Wet", "Wet", "Wet", "Wet", "Dry", "Dry", "Dry", 
+                                   "Wet", "Wet", "Wet", "Wet", "Wet", "Dry", "Dry", "Wet", "Wet", "Wet", "Wet", "Wet", 
+                                   "Dry", "Wet", "Wet", "Wet", "Wet", "Wet", "Wet", "Wet", "Wet", "Wet", "Wet", "Wet", 
+                                   "Wet", "Wet", "Wet", "Wet", "Wet", "Wet", "Wet", "Wet", "Wet")
+
+Week_2 <- c(2, 3, 4, 5, 1, 2, 3, 4, 5, 3, 4, 5, 1, 2, 3, 4, 5, 4, 5, 1, 2, 3, 4, 5, 5, 1, 2, 3, 4, 5, 1, 
+                     2, 3, 4, 5, 2, 3, 4, 5, 3, 4, 5, 4, 5, 5)
+
+Estimate <- c(0.03125, 0.1090, 0.1347, -0.2605, 0.03174, -0.1657, -0.03150, 0.2104, 0.2754, 0.07778, 0.1034, -0.2918, 
+              0.000498, -0.1970, -0.06274, 0.1792, 0.2442, 0.02566, -0.3695, -0.07728, -0.2748, -0.1405, 0.1014, 0.1664, 
+              -0.3952, -0.1029, -0.3004, -0.1662, 0.07576, 0.1407, 0.2923, 0.09480, 0.2290, 0.4710, 0.5359, -0.1975, 
+              -0.06324, 0.1787, 0.2437, 0.1342, 0.3762, 0.4411, 0.2419, 0.3069, 0.06497)
+
+Std_Error <- c(0.08042, 0.07130, 0.07335, 0.07291, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.08042, 0.07130, 
+                    0.07335, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.08042, 0.07130, 0.07299, 0.07299, 0.07299, 
+                    0.07299, 0.07299, 0.08042, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 
+                    0.07299, 0.07299, 0.08042, 0.07130, 0.07335, 0.07291, 0.08042, 0.07130, 0.07335, 0.08042, 0.07130, 0.08042)
+
+DF <- rep(76, 45)
+
+t_Value <- c(0.39, 1.53, 1.84, -3.57, 0.43, -2.27, -0.43, 2.88, 3.77, 0.97, 1.45, -3.98, 0.01, -2.70, -0.86, 2.46, 
+             3.35, 0.32, -5.18, -1.06, -3.76, -1.93, 1.39, 2.28, -4.91, -1.41, -4.12, -2.28, 1.04, 1.93, 4.00, 1.30, 
+             3.14, 6.45, 7.34, -2.46, -0.89, 2.44, 3.34, 1.67, 5.28, 6.01, 3.01, 4.30, 0.81)
+
+Pr_t <- as.character(c(0.6987, 0.1304, 0.0702, 0.0006, 0.6649, 0.0260, 0.6673, 0.0051, 0.0003, 0.3365, 0.1510, 0.0002, 0.9946, 
+          0.0086, 0.3927, 0.0164, 0.0013, 0.7506, "<.0001", 0.2930, 0.0003, 0.0579, 0.1687, 0.0254, "<.0001", 0.1625, 
+          "<.0001", 0.0256, 0.3026, 0.0576, 0.0001, 0.1980, 0.0024, "<.0001", "<.0001", 0.0164, 0.3779, 0.0172, 0.0013, 
+          0.0992, "<.0001", "<.0001", 0.0036, "<.0001", 0.4217))
+
+t1 <- data.frame(
+  Inoc = Inoculation_Method,
+  Week = Week,
+  Inoc_ = Inoculation_Method_2,
+  Week__ = Week_2,
+  Estimate = Estimate,
+  Std_Error = Std_Error,
+  DF = DF,
+  t_Value = t_Value,
+  `Pr > t` = format(Pr_t, scientific = FALSE, digits = 4)
+)
+
+knitr::kable(t1,
+             align = "c")
+
+```
+
+
+```{r,,fig.pos="H"}
+#| label: fig-Appendix-C-2
+#| echo: false
+#| eval: true
+#| fig-cap: "*Differences of Thickness `*` Week Least Squares Means* table."
+
+Thickness = c("1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", 
+                "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", 
+                "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", 
+                "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", 
+                "1/4-inch", "1/4-inch", "1/4-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", 
+                "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch")
+Week = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5,
+            1, 1, 1, 1, 2, 2, 2, 3, 3, 4)
+Thickness2 = c("1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", 
+                "1/8-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", 
+                "1/8-inch", "1/4-inch", "1/4-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", 
+                "1/4-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", 
+                "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch")
+Week2 = c(2, 3, 4, 5, 1, 2, 3, 4, 5, 3, 4, 5, 1, 2, 3, 4, 5, 4, 5, 1, 2, 3, 4, 5, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 
+           2, 3, 4, 5, 3, 4, 5, 4, 5, 5)
+Estimate = c(-0.1105, -0.1406, -0.1119, -0.2525, -0.5296, -0.5853, -0.3433, -0.1043, -0.2939, -0.03006, -0.00145, 
+               -0.1420, -0.4191, -0.4748, -0.2328, 0.006232, -0.1834, 0.02861, -0.1120, -0.3890, -0.4448, -0.2027, 
+               0.03629, -0.1534, -0.1406, -0.4177, -0.4734, -0.2313, 0.007684, -0.1820, -0.2771, -0.3328, -0.09074, 
+               0.1483, -0.04140, -0.05573, 0.1863, 0.4253, 0.2357, 0.2421, 0.4811, 0.2914, 0.2390, 0.04934, 
+               -0.1897)
+Std_Error = c(0.08042, 0.07130, 0.07335, 0.07291, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.08042, 0.07130, 
+                0.07335, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.08042, 0.07130, 0.07299, 0.07299, 0.07299, 
+                0.07299, 0.07299, 0.08042, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 
+                0.07299, 0.07299, 0.08042, 0.07130, 0.07335, 0.07291, 0.08042, 0.07130, 0.07335, 0.08042, 
+                0.07130, 0.08042)
+DF = rep(76, 45)
+t_Value = c(-1.37, -1.97, -1.53, -3.46, -7.26, -8.02, -4.70, -1.43, -4.03, -0.37, -0.02, -1.94, -5.74, -6.51, 
+              -3.19, 0.09, -2.51, 0.36, -1.57, -5.33, -6.09, -2.78, 0.50, -2.10, -1.75, -5.72, -6.49, -3.17, 0.11, 
+              -2.49, -3.80, -4.56, -1.24, 2.03, -0.57, -0.69, 2.61, 5.80, 3.23, 3.01, 6.75, 3.97, 2.97, 0.69, 
+              -2.36)
+Pr_t = as.character(c(0.1735, 0.0523, 0.1311, 0.0009, "<.0001", "<.0001", "<.0001", 0.1573, 0.0001, 0.7096, 0.9838, 0.0565, 
+           "<.0001", "<.0001", 0.0021, 0.9322, 0.0141, 0.7230, 0.1205, "<.0001", "<.0001", 0.0069, 0.6205, 0.0389, 
+           0.0845, "<.0001", "<.0001", 0.0022, 0.9164, 0.0148, 0.0003, "<.0001", 0.2176, 0.0457, 0.5723, 
+           0.4904, 0.0108, "<.0001", 0.0018, 0.0035, "<.0001", 0.0002, 0.0040, 0.4911, 0.0209))
+
+
+t2 <- data.frame(
+  Thickness=Thickness,
+  Week = Week,
+  Thickness_ = Thickness2,
+  Week_ = Week2,
+  Estimate = Estimate,
+  Std_Error = Std_Error,
+  DF = DF,
+  t_Value = t_Value,
+  `Pr > t` = Pr_t
+)
+
+
+knitr::kable(t2,
+             align = "c") 
+
+```
