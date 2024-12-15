@@ -58,23 +58,22 @@ The corresponding code can be found in *Appendix A - R Code* and *Appendix B - S
 
 The first meeting with our clients was on September 13th.
 We discussed their project and what kind of data they were going to be looking at.
-They detailed to us their project, which is looking at the levels of Salmonella in beef jerky at different inoculations and thicknesses.
+They detailed to us their project, which is looking at the levels of salmonella in beef jerky at different inoculations and thicknesses.
 Prior to the meeting they sent us what their variables would be, which gave us a good idea of what might be the best experimental design.
 The group informed us they were avoiding a completely randomized design (CRD) at the request of their professor.
 With that in mind, we suggested other possible models.
 
-Later, after receiving feedback from Dr. Howard and several PhD students within the statistics department, we suggested adding a time component to the experiment as well as creating multiple batches to replicate each treatment combination.
-This lead to us suggested a mixed model for the analysis approach.
+Later, after receiving feedback from Dr. Howard and several PhD students within the statistics department, we suggested adding a time component to the experiment and creating multiple batches to replicate each treatment combination.
+This lead to us suggesting a mixed model for the analysis.
 
 In both the initial meeting and the follow-up session the clients were more than happy to implement our suggestions.
-In the end the experiment involved two thickness levels (one-fourth and one-eighth of an inch), two inoculation methods (dry and wet), and five evenly spaced time points were measurements were taken (weeks 1-5) creating twenty entries per batch.
+In the end the experiment involved two thickness levels (one-fourth and one-eighth of an inch), two inoculation methods (dry and wet), and five evenly spaced time points where measurements were taken (weeks 1-5) creating twenty entries per batch.
 The exact number of batches would not be known until after the power analysis, found in the *Power Analysis* section.
-We provided the client an example dataset we created to give them a better idea of what the end product may look like.
-This dataset had five batches.
+We provided the client an example dataset we created to give them a better idea of what the end product may look like.  This dataset had five batches.
 
 # Study Objectives and Proposed Model
 
-The clients were most interested in the effect of the thickness levels, the inoculation method, and their interaction had on the Salmonella levels.
+The clients were most interested in the effect of the thickness levels, the inoculation method, and their interaction had on the salmonella levels.
 In the final model we included the week effect and subsequent interactions as well.
 These variables are the fixed effects in the proposed mixed model.
 
@@ -91,7 +90,7 @@ $$
 Y_{ijkl} = \mu + \alpha_i + \beta_j + \tau_k + (\alpha \beta)_{ij}+(\alpha \tau)_{ik}+(\beta \tau)_{jk}+(\alpha \beta \tau)_{ijk} + u_l + e_{ijkl}
 $$
 
-Here, $Y_{ijkl}$ is the Salmonella level and $\mu$ is the overall mean.
+Here, $Y_{ijkl}$ is the salmonella level and $\mu$ is the overall mean.
 The fixed effects are represented by $\alpha_i$ for the effect of the $i$th inoculation method, $\beta_j$ for the effect of the $j$th thickness level, and $\tau_k$ for the effect of the $k$th week.
 The interaction effect of the $i$th inoculation method and the $j$th thickness level is represented by $(\alpha \beta)_{ij}$, with the other two-way interactions following this form.
 The three-way interaction between all fixed effects is represented as $(\alpha \beta \tau)_{ijk}$.
@@ -164,7 +163,7 @@ knitr::kable(
 
 ## Distribution of response variable
 
-Before continuing our investigation into the relationships among the treatment variables, we want to look into the response variable (Salmonella levels).
+Before continuing our investigation into the relationships among the treatment variables, we want to look into the response variable (salmonella levels).
 Specifically, we want to see how it is distributed.
 @fig-hist shows a histogram and Q-Q plot of the response variable in the left and right plots respectively.
 While the histogram shows a slight potential skew, this is not enough for us say the distribution is non-normal.
@@ -174,7 +173,7 @@ Furthermore, the Q-Q plot indicates the response variable follows a relatively n
 #| label: fig-hist
 #| echo: false
 #| eval: true
-#| fig-cap: "Plots to see the distribution of the response variable."
+#| fig-cap: "Histogram and Q-Q plot of the response variable."
 #| layout-ncol: 2
 #| fig-subcap: 
 #|  - "Histogram"
@@ -220,7 +219,7 @@ In both plots we seem to have interaction among the the variables, so that will 
 #| label: fig-explore-1
 #| echo: false
 #| eval: true
-#| fig-cap: "Interaction plots of inoculation method and time for each each thickenss level."
+#| fig-cap: "Interaction plots of inoculation method and time for each thickness level."
 #| fig-width: 6
 #| fig-height: 4
 
@@ -331,7 +330,7 @@ The plots in @fig-res allow us to evaluate these assumptions.
 To graphically test normality, we can look at both the histogram (top right) and the Q-Q plot (bottom left).
 These both appear approximately normal, indicating the assumption holds.
 The boxplot (bottom right) can also show normality as well as potential outliers.
-It appears there is one outlier, but the normallity assmption still holds.
+It appears there is one outlier, but the normality assumption still holds.
 The residual plot (top left) allows us to check if the homogeneous assumption holds, and it appears to since the points seem somewhat randomly distributed with no clear pattern.
 Since the assumptions are holding, we can proceed with the linear mixed model.
 
@@ -369,84 +368,44 @@ The first one we are looking at is for the interaction between inoculation metho
 This can be seen in @fig-iXt.
 These tables allow us to see how the variables interact at each level.
 
-![*Least Squares Means* output for inoculation method and thickness interaction.](ar-5.png){#fig-iXt width="80%"}
+![*Least Squares Means* output for inoculation method and thickness interaction.](ar-5.png){#fig-iXt width="88%"}
 
 We can see from the *Least Squares Means* table that all the combinations are significant, but we want to look closer at the differences in the second table.
 Once again all the differences between each possible combination of inoculation method and thickness are significant since the largest p-value is 0.0209.
 We can see the largest difference is between the combinations of 1/4-inch with dry inoculation and 1/8-inch with dry inoculation.
 The negative difference implies the 1/8-inch pieces have significantly lower values, which is what we want.
 The smallest difference was involved the two thicknesses with wet inoculation.
-This indicates both preform in a similar way with the 1/8-inch pieces performing slightly but significantly better.
+This indicates both perform in a similar way with the 1/8-inch pieces performing slightly but significantly better.
 
 ![*Least Squares Means* table for inoculation method and week interaction.](ar-6.png){#fig-iXW width="70%"}
 
-Moving on to the inoculation method and week interaction, @fig-iXW shows us that all combinations of the two variables are significant.  The estimates are fairly different though with the highest estimate for the dry samples occurring in week 5, while that same week is the lowest estimate for the wet samples. Additionally week 2 has the highest estimate for the wet samples.  Similarly, @fig-iXw-slice shows that the interaction between the two variables is most significant at week 5, followed by week 2.  This suggests the impact of the inoculation method depends on the week of measurement.  
+Moving on to the inoculation method and week interaction, @fig-iXW shows us that the estimated response variables differ for the treatment combinations.  The largest estimate is the dry samples in week 5 (4.7607), while that same week is the lowest estimate for the wet samples (4.2249). Additionally week 2 has the highest estimate for the wet samples.  Similarly, @fig-iXw-slice shows that the interaction between the two variables is most significant at week 5 (p-value\<0.0001), followed by week 2 (p-value=0.0086).  This suggests the impact of the inoculation method depends on the week of measurement.  
 
 ![*Test of Effect Slices* table for the two-way interaction with respect to the inoculation method and the week respectively.](ar-7.png){#fig-iXw-slice}
 
-Note, @fig-Appendix-C-1, which shows the differences among the different combinations of inoculation methods and weeks, can be found in *Appendix B - SAS Code and Additional Output*.  Most of the significant differences involve cases where there are two or more weeks between the treatment combinations, but some of the largest significant estimated differences occurred in weeks 4 and 5.
+@fig-Appendix-C-1, which shows the differences among the different combinations of inoculation methods and weeks, can be found in *Appendix B - SAS Code and Additional Output*.  Note that the second table in @fig-iXw-slice comes from the comparison of the dry versus wet method for a given week found in @fig-Appendix-C-1.  For the comparisons involving different weeks, most of the significant differences involve cases where there are two or more weeks between the treatment combinations, but some of the largest significant estimated differences occurred in weeks 4 and 5.
 
-
-
-**Thickness \times Week**
-
-The results show that bacterial growth varies significantly across weeks for both thicknesses, with the effect being stronger for 1/8-inch thickness (F=17.53,p\<0.0001) than for 1/4-inch (F=3.19,p=0.0179).
-Thickness differences are most pronounced in Weeks 1 and 2, where 1/8-inch slices show significantly higher bacterial growth compared to 1/4-inch (p\<0.0001).
-By Week 5, the effect of thickness is no longer significant (F=0.32,p=0.5723), suggesting bacterial growth levels stabilize between the two thicknesses.
-
-1/8-inch thickness facilitates higher bacterial growth compared to 1/4-inch across all weeks, with Week 2 showing the highest LSMean for 1/8-inch.
-This highlights that the combination of thinner slices and Week 2 conditions create the most favorable environment for bacterial growth.
+The last of the three two-way interactions is for the thickness and the weeks.  @fig-tXW shows that the largest estimated response variable is 1/8-inch samples in week 2 (4.8049) followed by the same thickness the week prior (4.7491).  Meanwhile, the 1/4-inch samples over the five weeks account for five of the six lowest estimates.  This indicates the 1/4-inch samples are generally better at slowing bacterial growth over time.  They are also more consistent than the 1/8-inch pieces. 
 
 ![*Least Squares Means* table for thickness and week interaction.](ar-8.png){#fig-tXW}
 
-
-@fig-Appendix-C-2
-
-The 1/8-inch thickness shows greater variability in bacterial growth across weeks, highlighting its susceptibility.
-Thickness differences are most significant in Weeks 1 and 2, where thinner slices (1/8-inch) show much higher bacterial growth than thicker slices (1/4-inch).
-By Week 5, the effect of thickness diminishes, suggesting bacterial growth stabilizes between the two thicknesses.
+Adding to this, @fig-Appendix-C-2 in *Appendix B - SAS Code and Additional Output* shows the differences among the various combinations of the thicknesses and the weeks.  The differences involving combinations that hold one of the two variables constant (eg. 1/4-inch at week 1 versus 1/8-inch at week 1 where the week is constant) are shown in @fig-tXW.  The second table in @fig-tXW shows us the interaction of these variables is most significant in the first two weeks (p-value\<0.0001) followed by the third week (p-value=0.0069). When looking at these same cases in @fig-Appendix-C-2 we can see negative estimates, implying the 1/4-inch thickness returns a lower response value for the first three weeks.  Weeks 4 and 5 are not significant though.  Additionally, in the first table we can see the interaction at the 1/8-inch level is highly significant (p-value\<0.0001), while the 1/4-inch level has a higher p-value (0.0179) but is still significant.  
 
 ![*Test of Effect Slices* table for the two-way interaction with respect to the thickness and the week respectively.](ar-9.png){#fig-tXW-slice}
 
-\newpage
+## Recommendation
 
-# Recommendation
+In terms of how the results of this experiment would affect a producer looking to sell beef jerky we need to make a key assumption.  Since they would obviously not be inoculating it with salmonella, let's assume the dry and wet inoculation methods reflect storage conditions.   With that in mind, our recommendation depends on a few factors.
 
-Use thicker slices (1/4-inch) to minimize bacterial growth and ensure uniform thickness during processing. 
-
-If both slices are used, prioritize the wet inoculation method over dry, as it consistently results in lower bacterial growth
-
-To reduce bacterial growth, focus on critical weeks: prioritize monitoring Week 2 and Week 5 for inoculation methods, as these show significant differences between the dry and wet methods, and Week 1 and Week 2 for thickness, as 1/8-inch slices are more prone to bacterial growth. 
+If a producer will have both dry and wet storage methods, we suggest prioritizing cutting the jerky to 1/4-inch.  This length was more consistent and had generally lower estimates than the 1/8-inch slices did.  On the other hand, if a producer wants to use both thicknesses we recommend more wet storage conditions as the wet inoculation method saw lower estimates of bacterial growth over time.  Of course, this is simulated data so these recommendations are not meant for real-world application.
 
 # Conclusion
 
-**WE NEED TO WRITE SOMETHING LIKE THIS**
-
-In this report, an attempt is made to exhibit the protocols that need to be followed to
-conduct an experimental study. The first step is getting to know the research idea of the
-clients/domain experts. A consultant should collect as much information as possible
-regarding the research in this meeting. This may require understanding how the
-experiment will be conducted in the field and drawing out the layout of the experiment.
-An appropriate study design is then suggested. Then, once the client provides the required
-estimates of the mean components and variance components either from a pilot study or
-past literatures, a power analysis is to be performed. Once, desired power is achieved
-then the experiment should be conducted. For this study, power analysis suggested two
-blocks to be enough to detect the difference in the highest level of interaction. Data was
-simulated based on the given estimates of mean and variances and number of blocks and
-was analyzed.
-Given full availability of resources of nozzle and herbicides, for W1, N1H2 resulted in
-least biomass. Similarly, for W2, the desired combination is N1H5, and lastly for W3, it
-is N2H1 combination. However, in presence of subset of herbicides, three-way
-interaction between weed, nozzle and herbicides makes the choice difficult. For instance,
-for W1, H1 should be avoided for any combination of N1 and N2 as it results in the
-highest amount of dry weed biomass suggesting it is not strong enough to prevent weed
-growth. Similarly, N2 would be preferred over N1 if H1 or H2 is sprayed on W2. Hence,
-in the presence of three-way interaction, it is difficult to say which combination is the
-most desired one and depends on the variety of weed species and the resources available
+This report highlights the work done in the consultation of our STAT 802 clients.  We first met with our group to learn more about the experiment they wished to perform.  After consulting with others we were able to provide recommendations for the framework of the experiment, including a model.  By completing a power analysis using data provided by the client we were able to verify the necessary requirements for the size of the experiment in terms.  Then we carried out a simulation to create a dataset that mimics the results of a real experiment.  We were then able to explore and analyze the data using R and SAS.
 
 # Acknowledge
 
-We want to thank Dr. Reka Howard for helping us with the project. We're also grateful to the people of STAT 802 group for sharing their study ideas and letting us work with them on a project in their area of expertise.
+We want to thank Dr. Reka Howard, Malith Premarathna, and other members of the SC3L staff for helping us with the project. We're also grateful to the people of STAT 802 group for sharing their study ideas and letting us work with them on a project in their area of expertise.
 
 
 \newpage
@@ -493,7 +452,7 @@ response_summary <- data %>%
 
 knitr::kable(
   response_summary,
-  caption = "Summary of response rariable across factors and weeks",
+  caption = "Summary of response variable across factors and weeks",
   digits = 3, 
   col.names = c("Inoculation Method", "Thickness", "Week", "Mean Response", 
                 "SD Response", "Count"),
@@ -744,12 +703,17 @@ run;
 ### Analysis
 
 ``` sas
-proc glimmix data=data plots=residualpanel;
+proc glimmix data=work.import plots=residualpanel;
     class Batches Inoculation_Method Thickness Week;
     model Response = Inoculation_Method|Thickness|Week;
     random intercept / subject=Batches;
     random Week / subject=Batches*Inoculation_Method*Thickness type=ar(1) residual;
-    lsmeans Inoculation_Method*Thickness*Week / adjust=tukey cl;
+    lsmeans Inoculation_Method*Thickness / diff slicediff = week;
+    lsmeans Inoculation_Method*Week / diff slicediff = Thickness;
+    lsmeans Thickness*Week / diff slicediff = Inoculation_Method;
+    lsmeans Inoculation_Method*Thickness / slice=week;
+    lsmeans Inoculation_Method*Week / slice=Thickness;
+    lsmeans Thickness*Week / slice=Inoculation_Method;
     
     /* Define main effect contrasts */
     contrast 'Dry vs Wet' 
@@ -847,36 +811,35 @@ Thickness = c("1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-i
                 "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", 
                 "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", 
                 "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", 
-                "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", 
+                "1/4-inch", "1/4-inch", "1/4-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", 
                 "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch")
 Week = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5,
-           5, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4)
+            1, 1, 1, 1, 2, 2, 2, 3, 3, 4)
 Thickness2 = c("1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", 
                 "1/8-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", 
                 "1/8-inch", "1/4-inch", "1/4-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", 
                 "1/4-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", 
-                "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", 
-                "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch")
+                "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch")
 Week2 = c(2, 3, 4, 5, 1, 2, 3, 4, 5, 3, 4, 5, 1, 2, 3, 4, 5, 4, 5, 1, 2, 3, 4, 5, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 
-           5, 2, 3, 4, 5, 3, 4, 5, 4, 5, 5)
+           2, 3, 4, 5, 3, 4, 5, 4, 5, 5)
 Estimate = c(-0.1105, -0.1406, -0.1119, -0.2525, -0.5296, -0.5853, -0.3433, -0.1043, -0.2939, -0.03006, -0.00145, 
                -0.1420, -0.4191, -0.4748, -0.2328, 0.006232, -0.1834, 0.02861, -0.1120, -0.3890, -0.4448, -0.2027, 
                0.03629, -0.1534, -0.1406, -0.4177, -0.4734, -0.2313, 0.007684, -0.1820, -0.2771, -0.3328, -0.09074, 
-               0.1483, -0.04140, -0.1897, -0.05573, 0.1863, 0.4253, 0.2357, 0.2421, 0.4811, 0.2914, 0.2390, 0.04934, 
+               0.1483, -0.04140, -0.05573, 0.1863, 0.4253, 0.2357, 0.2421, 0.4811, 0.2914, 0.2390, 0.04934, 
                -0.1897)
 Std_Error = c(0.08042, 0.07130, 0.07335, 0.07291, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.08042, 0.07130, 
                 0.07335, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.08042, 0.07130, 0.07299, 0.07299, 0.07299, 
                 0.07299, 0.07299, 0.08042, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 
-                0.07299, 0.07299, 0.08042, 0.08042, 0.07130, 0.07335, 0.07291, 0.08042, 0.07130, 0.07335, 0.08042, 
+                0.07299, 0.07299, 0.08042, 0.07130, 0.07335, 0.07291, 0.08042, 0.07130, 0.07335, 0.08042, 
                 0.07130, 0.08042)
-DF = rep(76, 46)
+DF = rep(76, 45)
 t_Value = c(-1.37, -1.97, -1.53, -3.46, -7.26, -8.02, -4.70, -1.43, -4.03, -0.37, -0.02, -1.94, -5.74, -6.51, 
               -3.19, 0.09, -2.51, 0.36, -1.57, -5.33, -6.09, -2.78, 0.50, -2.10, -1.75, -5.72, -6.49, -3.17, 0.11, 
-              -2.49, -3.80, -4.56, -1.24, 2.03, -0.57, -2.36, -0.69, 2.61, 5.80, 3.23, 3.01, 6.75, 3.97, 2.97, 0.69, 
+              -2.49, -3.80, -4.56, -1.24, 2.03, -0.57, -0.69, 2.61, 5.80, 3.23, 3.01, 6.75, 3.97, 2.97, 0.69, 
               -2.36)
 Pr_t = as.character(c(0.1735, 0.0523, 0.1311, 0.0009, "<.0001", "<.0001", "<.0001", 0.1573, 0.0001, 0.7096, 0.9838, 0.0565, 
            "<.0001", "<.0001", 0.0021, 0.9322, 0.0141, 0.7230, 0.1205, "<.0001", "<.0001", 0.0069, 0.6205, 0.0389, 
-           0.0845, "<.0001", "<.0001", 0.0022, 0.9164, 0.0148, 0.0003, "<.0001", 0.2176, 0.0457, 0.5723, 0.0209, 
+           0.0845, "<.0001", "<.0001", 0.0022, 0.9164, 0.0148, 0.0003, "<.0001", 0.2176, 0.0457, 0.5723, 
            0.4904, 0.0108, "<.0001", 0.0018, 0.0035, "<.0001", 0.0002, 0.0040, 0.4911, 0.0209))
 
 
