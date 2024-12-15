@@ -52,7 +52,7 @@ data <- read.csv("rptm_simulation.csv")
 This paper summarizes the consulting that was done for our assigned STAT 802 group.
 For more information on the experiment, the data, or any other files used in this paper see our [Github page](https://github.com/maksudatoma/Stat-802-Project) which can be found at \<https://github.com/maksudatoma/Stat-802-Project\>.
 The coding languages used in the paper are R and SAS.
-The corresponding code can be found in *Appendix A - R Code* and *Appendix B - SAS Code* respectively.
+The corresponding code can be found in *Appendix A - R Code* and *Appendix B - SAS Code and Additional Output* respectively.
 
 # Initial Meetings
 
@@ -244,72 +244,6 @@ ggplot(data, aes(x = Week, y = Response,
 
 ```
 
-**Box Plot** **I THINK WE CAN ADD THIS** 
-The boxplot illustrates the response variable across five weeks, separated by inoculation method (Dry, Wet) and thickness (1/4-inch, 1/8-inch).
-Differences in medians between Dry and Wet methods suggest potential interactions, particularly in certain weeks.
-The response patterns differ between 1/4-inch and 1/8-inch thickness, with 1/4-inch showing more consistency over time.
-Variability in responses increases in certain weeks, such as Week 5 for 1/4-inch and Wet, indicating possible heterogeneity in variance.
-Overall, the plot highlights the importance of analyzing the interaction effects and temporal correlations in the repeated measures model.
-
-```{r,,fig.pos="H"}
-#| label: fig-boxplot
-#| echo: false
-#| eval: true
-#| fig-cap: "Boxplot of response variable over time, controlling for thickness and inoculation method."
-
-
-##2. Boxplot
-
-ggplot(data, aes(x = factor(Week), y = Response, fill = Inoculation_Method)) +
-  geom_boxplot() +
-  facet_wrap(~ Thickness) +
-  labs(
-    x = "Week",
-    y = "Response",
-    fill = "Inoculation Method"
-  ) +
-  theme_minimal() +
-  theme(
-    text = element_text(size = 14),
-    legend.position = "bottom"
-  )
-
-
-```
-
-**WHAT DO YOU THINK ABOUT THIS PLOT?** Based on lsmean.
-
-If you want we can add two other interaction plots as well?
-
-The interaction plot suggests that Thickness has a differential effect on the response over time, with 1/8-inch showing greater variability and sharper trends compared to 1/4-inch.
-This interaction warrants further statistical confirmation through hypothesis testing.
-
-```{r}
-# Load necessary library
-library(ggplot2)
-
-# Create the data frame
-data <- data.frame(
-  Thickness = rep(c("1/4-inch", "1/8-inch"), each = 5),
-  Week = rep(1:5, times = 2),
-  Estimate = c(4.2195, 4.3300, 4.3801, 4.3315, 4.3721, 
-               4.7491, 4.8049, 4.5628, 4.3238, 4.5135),
-  SE = rep(0.1013, 10) # Standard Error
-)
-
-# Interaction plot with error bars
-ggplot(data, aes(x = Week, y = Estimate, color = Thickness, group = Thickness)) +
-  geom_line(size = 1) +
-  geom_point(size = 2) +
-  geom_errorbar(aes(ymin = Estimate - SE, ymax = Estimate + SE), width = 0.2) +
-  labs(title = "Interaction Plot: Thickness vs Week",
-       x = "Week",
-       y = "Least Squares Means (Estimate)") +
-  theme_minimal() +
-  theme(legend.title = element_blank())
-
-```
-
 Another element to consider is correlation over time.
 Since this is a repeated measures experiment we need to account for this correlation by selecting a type of covariance structure.
 There are several types of structures such as variance components (VC), unstructured (UN), compound symmetry (CS) and heterogeneous compound symmetry (CSH), $p$-order auto-regressive (AR($p$)) and heterogeneous auto-regressive (ARH($p$)), $p$-order ante-dependence (ANTE($p$)), and Toeplitz (TOEP) among others.
@@ -391,7 +325,7 @@ knitr::kable(
 
 ```
 
-After verifying the fit of the AR($1$) covariance structure for the repeated measures, we needed to see if the assumptions for a linear mixed model were violated or not.
+After verifying the fit of the AR($1$) covariance structure for the repeated measures, we needed to see if the assumptions for a linear mixed model are violated or not.
 These include the residuals being normally distributed and homogeneous.
 The plots in @fig-res allow us to evaluate these assumptions.
 To graphically test normality, we can look at both the histogram (top right) and the Q-Q plot (bottom left).
@@ -426,11 +360,7 @@ Therefore, we need to consider simple effects.
 Overall we can say each respective two-way interaction does have an impact on the data.
 This validates what we saw in @fig-explore-1.
 
-While both the inoculation method and thickness are significant, this is just the main effects for the model.
-Therefore, we need to focus on the interaction terms.
-
-All interaction contrasts are significant, with Dry vs. Wet at 1/8 inches and 1/4 vs. 1/8 inches for Dry being highly significant.
-This highlights that the bacteria seems to grow higher when dry inoculated at the two thicknesses levels (especially on 1/8 inches)
+@fig-con shows the output for the contrasts we are evaluating at the client's request.  While both the inoculation method and thickness are significant, this is just repeating the main effects for each variable that we saw in @fig-fit.  Therefore, we need to focus on the interaction terms.  All interaction contrasts are significant, with `Dry vs. Wet at 1/8 inches` and `1/4 vs. 1/8 inches for Dry inoculation` being highly significant.  This requires further investigation.
 
 ![Contrasts table.](ar-2.png){#fig-con width="3.5in"}
 
@@ -448,39 +378,17 @@ The negative difference implies the 1/8-inch pieces have significantly lower val
 The smallest difference was involved the two thicknesses with wet inoculation.
 This indicates both preform in a similar way with the 1/8-inch pieces performing slightly but significantly better.
 
+![*Least Squares Means* table for inoculation method and week interaction.](ar-6.png){#fig-iXW width="70%"}
 
-## Are there any tables we don't need- I think we need all those to explain properly. As we already showed all those in presentation, we can add in report
+Moving on to the inoculation method and week interaction, @fig-iXW shows us that all combinations of the two variables are significant.  The estimates are fairly different though with the highest estimate for the dry samples occurring in week 5, while that same week is the lowest estimate for the wet samples. Additionally week 2 has the highest estimate for the wet samples.  Similarly, @fig-iXw-slice shows that the interaction between the two variables is most significant at week 5, followed by week 2.  This suggests the impact of the inoculation method depends on the week of measurement.  
 
-## LS mean comparison for interaction
+![*Test of Effect Slices* table for the two-way interaction with respect to the inoculation method and the week respectively.](ar-7.png){#fig-iXw-slice}
 
-The table summarizes how the response variable changes across combinations of inoculation methods, thickness, and weeks.
-For example, for the 1/4-inch thickness, both Dry and Wet methods show increases over time, but the Dry method typically has higher responses.
-Similarly, for the 1/8-inch thickness, the differences between Dry and Wet methods are smaller but still present.
-Confidence intervals provide assurance about the reliability of these estimates, and all results are statistically significant, confirming the trends observed.
+Note, @fig-Appendix-C-1, which shows the differences among the different combinations of inoculation methods and weeks, can be found in *Appendix B - SAS Code and Additional Output*.  Most of the significant differences involve cases where there are two or more weeks between the treatment combinations, but some of the largest significant estimated differences occurred in weeks 4 and 5.
 
-This output provides detailed results for the interaction of Inoculation_Method and Thickness.
-The least squares means (LSMeans) indicate that for both Dry and Wet inoculation methods, 1/8-inch thickness has significantly higher responses compared to 1/4-inch thickness (p\<0.0001).
-Pairwise comparisons confirm significant differences, such as Dry 1/4-inch vs. 1/8-inch (p\<0.0001) and Wet 1/4-inch vs. 1/8-inch (p=0.0209).
-Differences between inoculation methods (e.g., Dry 1/4-inch vs. Wet 1/4-inch) are also significant, with Wet showing slightly higher means.
-These findings highlight strong interaction effects, emphasizing that the relationship between inoculation method and response varies depending on the material thickness.
 
-Overall, both the inoculation method (Dry or Wet) and the thickness (1/4-inch or 1/8-inch) significantly affect the outcome, and these effects depend on each other.
-For both methods, the 1/8-inch thickness consistently leads to higher responses compared to 1/4-inch thickness.
-When comparing Dry and Wet methods, Wet generally performs slightly better, especially for 1/4-inch thickness.
-However, the differences between Dry and Wet are more noticeable at 1/8-inch thickness, highlighting that the combination of method and thickness plays a key role.
-These findings suggest that to optimize results, we need to carefully consider the interaction between the method used and the thickness of the material.
 
-**Inoculation Method** \times Week
-
-The interaction between inoculation method and time (Week) is evident, with Dry inoculation showing an increase in Week 5 and Wet inoculation peaking earlier.
-This indicates that the timing of bacterial growth depends on the inoculation method used.
-
-![fig6](ar-6.png){#fig-iXW width="70%"}
-
-The interaction between Inoculation_Method and Week is significant, with differences in bacterial growth patterns being particularly pronounced for Week 5, where the Dry method shows significantly higher responses than Wet.
-This suggests the impact of inoculation method depends on the week of measurement.
-
-![fig9](ar-7.png){#fig-iXw-slice}
+**Thickness \times Week**
 
 The results show that bacterial growth varies significantly across weeks for both thicknesses, with the effect being stronger for 1/8-inch thickness (F=17.53,p\<0.0001) than for 1/4-inch (F=3.19,p=0.0179).
 Thickness differences are most pronounced in Weeks 1 and 2, where 1/8-inch slices show significantly higher bacterial growth compared to 1/4-inch (p\<0.0001).
@@ -489,13 +397,16 @@ By Week 5, the effect of thickness is no longer significant (F=0.32,p=0.5723), s
 1/8-inch thickness facilitates higher bacterial growth compared to 1/4-inch across all weeks, with Week 2 showing the highest LSMean for 1/8-inch.
 This highlights that the combination of thinner slices and Week 2 conditions create the most favorable environment for bacterial growth.
 
-![fig8](ar-8.png){#fig-tXW}
+![*Least Squares Means* table for thickness and week interaction.](ar-8.png){#fig-tXW}
+
+
+@fig-Appendix-C-2
 
 The 1/8-inch thickness shows greater variability in bacterial growth across weeks, highlighting its susceptibility.
 Thickness differences are most significant in Weeks 1 and 2, where thinner slices (1/8-inch) show much higher bacterial growth than thicker slices (1/4-inch).
 By Week 5, the effect of thickness diminishes, suggesting bacterial growth stabilizes between the two thicknesses.
 
-![fig9](ar-9.png){#fig-tXW-slice}
+![*Test of Effect Slices* table for the two-way interaction with respect to the thickness and the week respectively.](ar-9.png){#fig-tXW-slice}
 
 \newpage
 
@@ -537,7 +448,6 @@ most desired one and depends on the variety of weed species and the resources av
 
 We want to thank Dr. Reka Howard for helping us with the project. We're also grateful to the people of STAT 802 group for sharing their study ideas and letting us work with them on a project in their area of expertise.
 
-# Future Work
 
 \newpage
 
@@ -662,7 +572,7 @@ knitr::kable(
 
 \newpage
 
-# Appendix B - SAS Code
+# Appendix B - SAS Code and Additional Output
 
 ### Power Analysis
 
@@ -859,4 +769,131 @@ proc glimmix data=data plots=residualpanel;
                
     ods output contrasts=f_contrast tests3=f_anova;
 run;
+```
+
+## Additional Output
+
+\newpage
+
+
+```{r,,fig.pos="H"}
+#| label: fig-Appendix-C-1
+#| echo: false
+#| eval: true
+#| fig-cap: "*Differences of Inoculation Method `*` Week Least Squares Means* table."
+
+
+Inoculation_Method <- c("Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", 
+                        "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", 
+                        "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Dry", "Wet", "Wet", "Wet", "Wet", 
+                        "Wet", "Wet", "Wet", "Wet", "Wet", "Wet")
+Week <- c(1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 
+          5, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4)
+
+Inoculation_Method_2 <- c("Dry", "Dry", "Dry", "Dry", "Wet", "Wet", "Wet", "Wet", "Wet", "Dry", "Dry", "Dry", 
+                                   "Wet", "Wet", "Wet", "Wet", "Wet", "Dry", "Dry", "Wet", "Wet", "Wet", "Wet", "Wet", 
+                                   "Dry", "Wet", "Wet", "Wet", "Wet", "Wet", "Wet", "Wet", "Wet", "Wet", "Wet", "Wet", 
+                                   "Wet", "Wet", "Wet", "Wet", "Wet", "Wet", "Wet", "Wet", "Wet")
+
+Week_2 <- c(2, 3, 4, 5, 1, 2, 3, 4, 5, 3, 4, 5, 1, 2, 3, 4, 5, 4, 5, 1, 2, 3, 4, 5, 5, 1, 2, 3, 4, 5, 1, 
+                     2, 3, 4, 5, 2, 3, 4, 5, 3, 4, 5, 4, 5, 5)
+
+Estimate <- c(0.03125, 0.1090, 0.1347, -0.2605, 0.03174, -0.1657, -0.03150, 0.2104, 0.2754, 0.07778, 0.1034, -0.2918, 
+              0.000498, -0.1970, -0.06274, 0.1792, 0.2442, 0.02566, -0.3695, -0.07728, -0.2748, -0.1405, 0.1014, 0.1664, 
+              -0.3952, -0.1029, -0.3004, -0.1662, 0.07576, 0.1407, 0.2923, 0.09480, 0.2290, 0.4710, 0.5359, -0.1975, 
+              -0.06324, 0.1787, 0.2437, 0.1342, 0.3762, 0.4411, 0.2419, 0.3069, 0.06497)
+
+Std_Error <- c(0.08042, 0.07130, 0.07335, 0.07291, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.08042, 0.07130, 
+                    0.07335, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.08042, 0.07130, 0.07299, 0.07299, 0.07299, 
+                    0.07299, 0.07299, 0.08042, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 
+                    0.07299, 0.07299, 0.08042, 0.07130, 0.07335, 0.07291, 0.08042, 0.07130, 0.07335, 0.08042, 0.07130, 0.08042)
+
+DF <- rep(76, 45)
+
+t_Value <- c(0.39, 1.53, 1.84, -3.57, 0.43, -2.27, -0.43, 2.88, 3.77, 0.97, 1.45, -3.98, 0.01, -2.70, -0.86, 2.46, 
+             3.35, 0.32, -5.18, -1.06, -3.76, -1.93, 1.39, 2.28, -4.91, -1.41, -4.12, -2.28, 1.04, 1.93, 4.00, 1.30, 
+             3.14, 6.45, 7.34, -2.46, -0.89, 2.44, 3.34, 1.67, 5.28, 6.01, 3.01, 4.30, 0.81)
+
+Pr_t <- as.character(c(0.6987, 0.1304, 0.0702, 0.0006, 0.6649, 0.0260, 0.6673, 0.0051, 0.0003, 0.3365, 0.1510, 0.0002, 0.9946, 
+          0.0086, 0.3927, 0.0164, 0.0013, 0.7506, "<.0001", 0.2930, 0.0003, 0.0579, 0.1687, 0.0254, "<.0001", 0.1625, 
+          "<.0001", 0.0256, 0.3026, 0.0576, 0.0001, 0.1980, 0.0024, "<.0001", "<.0001", 0.0164, 0.3779, 0.0172, 0.0013, 
+          0.0992, "<.0001", "<.0001", 0.0036, "<.0001", 0.4217))
+
+t1 <- data.frame(
+  Inoc = Inoculation_Method,
+  Week = Week,
+  Inoc_ = Inoculation_Method_2,
+  Week__ = Week_2,
+  Estimate = Estimate,
+  Std_Error = Std_Error,
+  DF = DF,
+  t_Value = t_Value,
+  `Pr > t` = format(Pr_t, scientific = FALSE, digits = 4)
+)
+
+knitr::kable(t1,
+             align = "c")
+
+```
+
+
+```{r,,fig.pos="H"}
+#| label: fig-Appendix-C-2
+#| echo: false
+#| eval: true
+#| fig-cap: "*Differences of Thickness `*` Week Least Squares Means* table."
+
+Thickness = c("1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", 
+                "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", 
+                "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", 
+                "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", 
+                "1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", 
+                "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch")
+Week = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5,
+           5, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4)
+Thickness2 = c("1/4-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", 
+                "1/8-inch", "1/4-inch", "1/4-inch", "1/4-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", 
+                "1/8-inch", "1/4-inch", "1/4-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", 
+                "1/4-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", 
+                "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", 
+                "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch", "1/8-inch")
+Week2 = c(2, 3, 4, 5, 1, 2, 3, 4, 5, 3, 4, 5, 1, 2, 3, 4, 5, 4, 5, 1, 2, 3, 4, 5, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 
+           5, 2, 3, 4, 5, 3, 4, 5, 4, 5, 5)
+Estimate = c(-0.1105, -0.1406, -0.1119, -0.2525, -0.5296, -0.5853, -0.3433, -0.1043, -0.2939, -0.03006, -0.00145, 
+               -0.1420, -0.4191, -0.4748, -0.2328, 0.006232, -0.1834, 0.02861, -0.1120, -0.3890, -0.4448, -0.2027, 
+               0.03629, -0.1534, -0.1406, -0.4177, -0.4734, -0.2313, 0.007684, -0.1820, -0.2771, -0.3328, -0.09074, 
+               0.1483, -0.04140, -0.1897, -0.05573, 0.1863, 0.4253, 0.2357, 0.2421, 0.4811, 0.2914, 0.2390, 0.04934, 
+               -0.1897)
+Std_Error = c(0.08042, 0.07130, 0.07335, 0.07291, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.08042, 0.07130, 
+                0.07335, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.08042, 0.07130, 0.07299, 0.07299, 0.07299, 
+                0.07299, 0.07299, 0.08042, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 0.07299, 
+                0.07299, 0.07299, 0.08042, 0.08042, 0.07130, 0.07335, 0.07291, 0.08042, 0.07130, 0.07335, 0.08042, 
+                0.07130, 0.08042)
+DF = rep(76, 46)
+t_Value = c(-1.37, -1.97, -1.53, -3.46, -7.26, -8.02, -4.70, -1.43, -4.03, -0.37, -0.02, -1.94, -5.74, -6.51, 
+              -3.19, 0.09, -2.51, 0.36, -1.57, -5.33, -6.09, -2.78, 0.50, -2.10, -1.75, -5.72, -6.49, -3.17, 0.11, 
+              -2.49, -3.80, -4.56, -1.24, 2.03, -0.57, -2.36, -0.69, 2.61, 5.80, 3.23, 3.01, 6.75, 3.97, 2.97, 0.69, 
+              -2.36)
+Pr_t = as.character(c(0.1735, 0.0523, 0.1311, 0.0009, "<.0001", "<.0001", "<.0001", 0.1573, 0.0001, 0.7096, 0.9838, 0.0565, 
+           "<.0001", "<.0001", 0.0021, 0.9322, 0.0141, 0.7230, 0.1205, "<.0001", "<.0001", 0.0069, 0.6205, 0.0389, 
+           0.0845, "<.0001", "<.0001", 0.0022, 0.9164, 0.0148, 0.0003, "<.0001", 0.2176, 0.0457, 0.5723, 0.0209, 
+           0.4904, 0.0108, "<.0001", 0.0018, 0.0035, "<.0001", 0.0002, 0.0040, 0.4911, 0.0209))
+
+
+t2 <- data.frame(
+  Thickness=Thickness,
+  Week = Week,
+  Thickness_ = Thickness2,
+  Week_ = Week2,
+  Estimate = Estimate,
+  Std_Error = Std_Error,
+  DF = DF,
+  t_Value = t_Value,
+  `Pr > t` = Pr_t
+)
+
+
+knitr::kable(t2,
+             align = "c") 
+
 ```
