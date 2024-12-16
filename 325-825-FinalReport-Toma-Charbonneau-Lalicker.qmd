@@ -50,7 +50,7 @@ data <- read.csv("rptm_simulation.csv")
 # Introduction
 
 This paper summarizes the consulting that was done for our assigned STAT 802 group.
-For more information on the experiment, the data, or any other files used in this paper see our [Github page](https://github.com/maksudatoma/Stat-802-Project) which can be found at \<https://github.com/maksudatoma/Stat-802-Project\>.
+For more information on the experiment, the data, or any other files used in this paper see our [Github page](https://github.com/maksudatoma/Stat-802-Project) which can be found at <https://github.com/maksudatoma/Stat-802-Project>.
 The coding languages used in the paper are R and SAS.
 The corresponding code can be found in *Appendix A - R Code* and *Appendix B - SAS Code and Additional Output* respectively.
 
@@ -69,7 +69,8 @@ This lead to us suggesting a mixed model for the analysis.
 In both the initial meeting and the follow-up session the clients were more than happy to implement our suggestions.
 In the end the experiment involved two thickness levels (one-fourth and one-eighth of an inch), two inoculation methods (dry and wet), and five evenly spaced time points where measurements were taken (weeks 1-5) creating twenty entries per batch.
 The exact number of batches would not be known until after the power analysis, found in the *Power Analysis* section.
-We provided the client an example dataset we created to give them a better idea of what the end product may look like.  This dataset had five batches.
+We provided the client an example dataset we created to give them a better idea of what the end product may look like.
+This dataset had five batches.
 
 # Study Objectives and Proposed Model
 
@@ -244,17 +245,17 @@ ggplot(data, aes(x = Week, y = Response,
 ```
 
 Another element to consider is correlation over time.
-Since this is a repeated measures experiment we need to account for this correlation by selecting a type of covariance structure.
-There are several types of structures such as variance components (VC), unstructured (UN), compound symmetry (CS) and heterogeneous compound symmetry (CSH), $p$-order auto-regressive (AR($p$)) and heterogeneous auto-regressive (ARH($p$)), $p$-order ante-dependence (ANTE($p$)), and Toeplitz (TOEP) among others.
-For more information on these see @purdue and @usdacov.
-The AR($p$) structure fits data that is ordered through time an equally spaced.
+Since this is a repeated measures experiment, we need to account for this correlation by selecting a type of covariance structure.
+There are several types of structures, such as variance components (VC), unstructured (UN), compound symmetry (CS), heterogeneous compound symmetry (CSH), $p$-order auto-regressive (AR($p$)), and heterogeneous auto-regressive (ARH($p$)), $p$-order ante-dependence (ANTE($p$)), and Toeplitz (TOEP) among others.
+For more information on these, see @purdue and @usdacov.
+The AR($p$) structure fits data that is ordered equally spaced through time.
 For that reason, our initial plan was to use this as the covariance structure with $p=1$.
 
 To see if this first-order auto-regressive structure might fit the data, let's consider the table and plot in @fig-corr.
 The correlation matrix (left) and plot (right) show the relationships between repeated measurements over weeks one to five.
 Strong correlations are observed between adjacent weeks (e.g., Week 1 vs. Week 2, r=0.69, Week 2 vs. Week 3, r=0.74), indicating temporal dependency.
-Correlations weaken as the time gap increases (e.g., Week 1 vs. Week 5, r=0.29), leading us to believe orders of $p>1$ are not necessary.
-This can be seen visually in the plot which uses circle size and color to model the correlation metrics seen in the matrix.
+Correlations weaken as the time gap increases (e.g., Week 1 vs. Week 5, r=0.29), leading us to believe orders of $p>1$ are unnecessary.
+This can be seen visually in the plot, which uses circle size and color to model the correlation metrics seen in the matrix.
 We can see as the gap between weeks increases, the circles become smaller and lighter.
 This pattern supports the use of models like AR($1$).
 
@@ -327,11 +328,11 @@ knitr::kable(
 After verifying the fit of the AR($1$) covariance structure for the repeated measures, we needed to see if the assumptions for a linear mixed model are violated or not.
 These include the residuals being normally distributed and homogeneous.
 The plots in @fig-res allow us to evaluate these assumptions.
-To graphically test normality, we can look at both the histogram (top right) and the Q-Q plot (bottom left).
+To test normality graphically, we can look at the histogram (top right) and the Q-Q plot (bottom left).
 These both appear approximately normal, indicating the assumption holds.
-The boxplot (bottom right) can also show normality as well as potential outliers.
+The boxplot (bottom right) can also show normality and potential outliers.
 It appears there is one outlier, but the normality assumption still holds.
-The residual plot (top left) allows us to check if the homogeneous assumption holds, and it appears to since the points seem somewhat randomly distributed with no clear pattern.
+The residual plot (top left) allows us to check if the homogeneous assumption holds, and it appears to be since the points seem somewhat randomly distributed with no clear pattern.
 Since the assumptions are holding, we can proceed with the linear mixed model.
 
 ![Residual plots for checking assumptions.](ar-4.png){#fig-res width="4in"}
@@ -340,12 +341,12 @@ Since the assumptions are holding, we can proceed with the linear mixed model.
 
 We can now look at some of the output from fitting the linear mixed model in SAS.
 @fig-fit shows three tables from this output.
-The first is the *Fit Statistics* table, which is where the metrics used in @fig-model-comparison-table come from.
-These metrics indicate the fit of the model, which seems fine to us.
+The first is the *Fit Statistics* table, where the metrics used in @fig-model-comparison-table come from.
+These metrics indicate the model's fit, which seems fine to us.
 The second table is the *Covariance Parameter Estimates* table and it shows how much of the variance in the model is explained by the random terms.
 We can see all three values are fairly small, with the estimated variance for the AR(1) autocorrelation structure actually being negative (-0.2140).
 This negative value shows a weak negative correlation between adjacent time points.
-The small values for the estimated residual variance (0.02664) is good news as it means there is minimal unexplained variability in this model.
+The small values for the estimated residual variance (0.02664) are good news as it means there is minimal unexplained variability in this model.
 
 \newpage
 
@@ -353,13 +354,17 @@ The small values for the estimated residual variance (0.02664) is good news as i
 
 The last table in @fig-fit is the *Type III Tests of Fixed Effects* table.
 This allows us to see if the fixed effects are significant by looking at the p-values reported in the `Pr > F` column.
-We must first consider the significance of the interaction effects and only look at main effects if the interaction effects are insignificant.
+We must first consider the significance of the interaction effects and only look at the main effects if the interaction effects are insignificant.
 While the three-way interaction between the inoculation method, thickness, and week is not significant, all three two-way interactions between these variables are highly significant (p\<0.0001).
 Therefore, we need to consider simple effects.
 Overall we can say each respective two-way interaction does have an impact on the data.
 This validates what we saw in @fig-explore-1.
 
-@fig-con shows the output for the contrasts we are evaluating at the client's request.  While both the inoculation method and thickness are significant, this is just repeating the main effects for each variable that we saw in @fig-fit.  Therefore, we need to focus on the interaction terms.  All interaction contrasts are significant, with `Dry vs. Wet at 1/8 inches` and `1/4 vs. 1/8 inches for Dry inoculation` being highly significant.  This requires further investigation.
+@fig-con shows the output for the contrasts we evaluate at the client's request.
+While both the inoculation method and thickness are significant, this is just repeating the main effects for each variable that we saw in @fig-fit.
+Therefore, we need to focus on the interaction terms.
+All interaction contrasts are significant, with `Dry vs. Wet at 1/8 inches` and `1/4 vs. 1/8 inches for Dry inoculation` being highly significant.
+This requires further investigation.
 
 ![Contrasts table.](ar-2.png){#fig-con width="3.5in"}
 
@@ -371,42 +376,66 @@ These tables allow us to see how the variables interact at each level.
 ![*Least Squares Means* output for inoculation method and thickness interaction.](ar-5.png){#fig-iXt width="88%"}
 
 We can see from the *Least Squares Means* table that all the combinations are significant, but we want to look closer at the differences in the second table.
-Once again all the differences between each possible combination of inoculation method and thickness are significant since the largest p-value is 0.0209.
+Once again, all the differences between each possible combination of the inoculation method and thickness are significant since the largest p-value is 0.0209.
 We can see the largest difference is between the combinations of 1/4-inch with dry inoculation and 1/8-inch with dry inoculation.
 The negative difference implies the 1/8-inch pieces have significantly lower values, which is what we want.
-The smallest difference was involved the two thicknesses with wet inoculation.
-This indicates both perform in a similar way with the 1/8-inch pieces performing slightly but significantly better.
+The smallest difference involved the two thicknesses with wet inoculation.
+This indicates both perform in a similar way, with the 1/8-inch pieces performing slightly but significantly better.
 
 ![*Least Squares Means* table for inoculation method and week interaction.](ar-6.png){#fig-iXW width="70%"}
 
-Moving on to the inoculation method and week interaction, @fig-iXW shows us that the estimated response variables differ for the treatment combinations.  The largest estimate is the dry samples in week 5 (4.7607), while that same week is the lowest estimate for the wet samples (4.2249). Additionally week 2 has the highest estimate for the wet samples.  Similarly, @fig-iXw-slice shows that the interaction between the two variables is most significant at week 5 (p-value\<0.0001), followed by week 2 (p-value=0.0086).  This suggests the impact of the inoculation method depends on the week of measurement.  
+Moving on to the inoculation method and week interaction, @fig-iXW shows us that the estimated response variables differ for the treatment combinations.
+The largest estimate is for the dry samples in week 5 (4.7607), while that same week is the lowest estimate for the wet samples (4.2249).
+Additionally, week 2 has the highest estimate for the wet samples.
+Similarly, @fig-iXw-slice shows that the interaction between the two variables is most significant at week 5 (p-value\<0.0001), followed by week 2 (p-value=0.0086).
+This suggests the impact of the inoculation method depends on the week of measurement.
 
 ![*Test of Effect Slices* table for the two-way interaction with respect to the inoculation method and the week respectively.](ar-7.png){#fig-iXw-slice}
 
-@fig-Appendix-C-1, which shows the differences among the different combinations of inoculation methods and weeks, can be found in *Appendix B - SAS Code and Additional Output*.  Note that the second table in @fig-iXw-slice comes from the comparison of the dry versus wet method for a given week found in @fig-Appendix-C-1.  For the comparisons involving different weeks, most of the significant differences involve cases where there are two or more weeks between the treatment combinations, but some of the largest significant estimated differences occurred in weeks 4 and 5.
+@fig-Appendix-C-1, which shows the differences among the different combinations of inoculation methods and weeks, can be found in *Appendix B - SAS Code and Additional Output*.
+Note that the second table in @fig-iXw-slice comes from the comparison of the dry versus wet method for a given week found in @fig-Appendix-C-1.
+For the comparisons involving different weeks, most of the significant differences involve cases where there are two or more weeks between the treatment combinations, but some of the largest significant estimated differences occurred in weeks 4 and 5.
 
-The last of the three two-way interactions is for the thickness and the weeks.  @fig-tXW shows that the largest estimated response variable is 1/8-inch samples in week 2 (4.8049) followed by the same thickness the week prior (4.7491).  Meanwhile, the 1/4-inch samples over the five weeks account for five of the six lowest estimates.  This indicates the 1/4-inch samples are generally better at slowing bacterial growth over time.  They are also more consistent than the 1/8-inch pieces. 
+The last of the three two-way interactions is for the thickness and the weeks.
+@fig-tXW shows that the largest estimated response variable is 1/8-inch samples in week 2 (4.8049), followed by the same thickness the week prior (4.7491).
+Meanwhile, the 1/4-inch samples over the five weeks account for five of the six lowest estimates.
+This indicates that 1/4-inch samples are generally better at slowing bacterial growth over time and are also more consistent than the 1/8-inch pieces.
 
 ![*Least Squares Means* table for thickness and week interaction.](ar-8.png){#fig-tXW}
 
-Adding to this, @fig-Appendix-C-2 in *Appendix B - SAS Code and Additional Output* shows the differences among the various combinations of the thicknesses and the weeks.  The differences involving combinations that hold one of the two variables constant (eg. 1/4-inch at week 1 versus 1/8-inch at week 1 where the week is constant) are shown in @fig-tXW.  The second table in @fig-tXW shows us the interaction of these variables is most significant in the first two weeks (p-value\<0.0001) followed by the third week (p-value=0.0069). When looking at these same cases in @fig-Appendix-C-2 we can see negative estimates, implying the 1/4-inch thickness returns a lower response value for the first three weeks.  Weeks 4 and 5 are not significant though.  Additionally, in the first table we can see the interaction at the 1/8-inch level is highly significant (p-value\<0.0001), while the 1/4-inch level has a higher p-value (0.0179) but is still significant.  
+Adding to this, @fig-Appendix-C-2 in *Appendix B - SAS Code and Additional Output* shows the differences among the various combinations of the thicknesses and the weeks.
+The differences involving combinations that hold one of the two variables constant (eg. 1/4-inch at week 1 versus 1/8-inch at week 1 where the week is constant) are shown in @fig-tXW.
+The second table in @fig-tXW shows us the interaction of these variables is most significant in the first two weeks (p-value\<0.0001), followed by the third week (p-value=0.0069).
+When looking at these same cases in @fig-Appendix-C-2, we can see negative estimates, implying the 1/4-inch thickness returns a lower response value for the first three weeks.
+Weeks 4 and 5 are not significant though.
+Additionally, in the first table, we can see the interaction at the 1/8-inch level is highly significant (p-value\<0.0001), while the 1/4-inch level has a higher p-value (0.0179) but is still significant.
 
-![*Test of Effect Slices* table for the two-way interaction with respect to the thickness and the week respectively.](ar-9.png){#fig-tXW-slice}
+![*Test of Effect Slices* table for the two-way interaction with respect to the thickness and the week, respectively.](ar-9.png){#fig-tXW-slice}
 
 ## Recommendation
 
-In terms of how the results of this experiment would affect a producer looking to sell beef jerky we need to make a key assumption.  Since they would obviously not be inoculating it with salmonella, let's assume the dry and wet inoculation methods reflect storage conditions.   With that in mind, our recommendation depends on a few factors.
+In terms of how the results of this experiment would affect a producer looking to sell beef jerky we need to make a key assumption.
+Since they would obviously not be inoculating it with salmonella, let's assume the dry and wet inoculation methods reflect storage conditions.
+With that in mind, our recommendation depends on a few factors.
 
-If a producer will have both dry and wet storage methods, we suggest prioritizing cutting the jerky to 1/4-inch.  This length was more consistent and had generally lower estimates than the 1/8-inch slices did.  On the other hand, if a producer wants to use both thicknesses we recommend more wet storage conditions as the wet inoculation method saw lower estimates of bacterial growth over time.  Of course, this is simulated data so these recommendations are not meant for real-world application.
+If a producer will have both dry and wet storage methods, we suggest prioritizing cutting the jerky to 1/4-inch.
+This length was more consistent and had generally lower estimates than the 1/8-inch slices did.
+On the other hand, if a producer wants to use both thicknesses, we recommend more wet storage conditions, as the wet inoculation method saw lower estimates of bacterial growth over time.
+Of course, this is simulated data so these recommendations are not meant for real-world application.
 
 # Conclusion
 
-This report highlights the work done in the consultation of our STAT 802 clients.  We first met with our group to learn more about the experiment they wished to perform.  After consulting with others we were able to provide recommendations for the framework of the experiment, including a model.  By completing a power analysis using data provided by the client we were able to verify the necessary requirements for the size of the experiment in terms.  Then we carried out a simulation to create a dataset that mimics the results of a real experiment.  We were then able to explore and analyze the data using R and SAS.
+This report highlights the work done in the consultation of our STAT 802 clients.
+We first met with our group to learn more about the experiment they wished to perform.
+After consulting with others we were able to provide recommendations for the framework of the experiment, including a model.
+By completing a power analysis using data provided by the client we were able to verify the necessary requirements for the size of the experiment in terms.
+Then we carried out a simulation to create a dataset that mimics the results of a real experiment.
+We were then able to explore and analyze the data using R and SAS.
 
-# Acknowledge
+# Acknowledgement
 
-We want to thank Dr. Reka Howard, Malith Premarathna, and other members of the SC3L staff for helping us with the project. We're also grateful to the people of STAT 802 group for sharing their study ideas and letting us work with them on a project in their area of expertise.
-
+We want to thank Dr. Reka Howard, Malith Premarathna, and other members of the SC3L staff for helping us with the project.
+We're also grateful to the people of the STAT 802 group for sharing their study ideas and letting us work with them on a project in their area of expertise.
 
 \newpage
 
@@ -739,7 +768,6 @@ run;
 
 \newpage
 
-
 ```{r,,fig.pos="H"}
 #| label: fig-Appendix-C-1
 #| echo: false
@@ -799,7 +827,6 @@ knitr::kable(t1,
              align = "c")
 
 ```
-
 
 ```{r,,fig.pos="H"}
 #| label: fig-Appendix-C-2
