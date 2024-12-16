@@ -64,7 +64,7 @@ The group informed us they were avoiding a completely randomized design (CRD) at
 With that in mind, we suggested other possible models.
 
 Later, after receiving feedback from Dr. Howard and several PhD students within the statistics department, we suggested adding a time component to the experiment and creating multiple batches to replicate each treatment combination.
-This lead to us suggesting a mixed model for the analysis.
+This led to us suggesting a mixed model for the analysis.
 
 In both the initial meeting and the follow-up session the clients were more than happy to implement our suggestions.
 In the end the experiment involved two thickness levels (one-fourth and one-eighth of an inch), two inoculation methods (dry and wet), and five evenly spaced time points where measurements were taken (weeks 1-5) creating twenty entries per batch.
@@ -101,7 +101,7 @@ Lastly, the residuals are represented by $e_{ijkl}$, which we assume can be dist
 # Power Analysis
 
 Before power analysis, We reached out to the client later on in the process to determine what contrasts they were most interested in testing.
-They expressed they wanted to see the difference between the two levels of the inoculation method, the two levels of the thickness, and the orthogonal contrasts these variable.
+They expressed they wanted to see the difference between the two levels of the inoculation method, the two levels of the thickness, and the orthogonal contrasts of these variables.
 This resulted in six contrasts being tested.
 
 To determine the necessary number of batches needed to increase the likelihood of detecting a true treatment effect, we performed a power analysis.
@@ -109,7 +109,7 @@ To do this, probable treatment mean estimates across all five weeks and variance
 The clients provided these metrics from @trtmeans.
 We then used these metrics to create a dataset with five batches where the response variable was identical across the batches.
 This dataset was then evaluated to determine the power.
-The results of the power analysis perfomed in SAS are shown below.
+The results of the power analysis performed in SAS are shown below.
 
 ![Results of power analysis.](PowerOutput.png)
 
@@ -131,7 +131,7 @@ Note, the simulation was performed in SAS.
 ## Summary Statistics
 
 As part of the project, we analyzed the simulated dataset.
-Before fitting out model to the dataset, we first wanted to explore some of the variables.
+Before fitting our model to the dataset, we first wanted to explore some of the variables.
 @fig-sum-stats shows the mean values and standard deviations for each treatment combination.
 We can see the changes in mean values are small, so further exploration and analysis are needed.
 
@@ -153,7 +153,7 @@ response_summary <- data %>%
 # Create a summary table using kable
 knitr::kable(
   response_summary,
-  caption = "Summary of response rariable across factors and weeks",
+  caption = "Summary of response variable across factors and weeks",
   digits = 3, # Round numbers to 3 decimal places
   col.names = c("Inoculation Method", "Thickness", "Week", "Mean Response", "SD Response", "Count"),
   format = "markdown"
@@ -211,10 +211,10 @@ Now we will graphically look at how the different variables of the model impact 
 @fig-explore-1 shows two interaction plots with one being for samples cut to 1/4-inches and the other for 1/8-inch samples.
 Each one shows the relationship between the two inoculation methods over the five weeks for the respective thickness.
 At the 1/4-inch level, the dry and wet methods start at a similar level but then change over time.
-The dry method appears to stay a lower level for the first few weeks, but then rise sharply.
+The dry method appears to stay a lower level for the first few weeks, but then rises sharply.
 The opposite trend occurs for the wet method.
 At the 1/8-inch level, the two methods are similar until the fifth week when the measurement of the wet method decreases and the dry method increases.
-In both plots we seem to have interaction among the the variables, so that will need to be investigated further.
+In both plots we seem to have interaction among the variables, so that will need to be investigated further.
 
 ```{r,  fig.pos="H"}
 #| label: fig-explore-1
@@ -435,7 +435,7 @@ We were then able to explore and analyze the data using R and SAS.
 # Acknowledgement
 
 We want to thank Dr. Reka Howard, Malith Premarathna, and other members of the SC3L staff for helping us with the project.
-We're also grateful to the people of the STAT 802 group for sharing their study ideas and letting us work with them on a project in their area of expertise.
+We're also grateful to the members of the STAT 802 group for sharing their ideas and letting us work with them on a project in their area of expertise.
 
 \newpage
 
